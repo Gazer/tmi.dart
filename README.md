@@ -14,7 +14,7 @@ This project was heavily inspired by the [TMI.js](https://tmijs.com/) project, a
 Install the dependency, create a client and start listening for chat events:
 
 ```dart
-import 'package:tmidart/tmidart.dart' as tmi;
+import 'package:tmidart/tmi.dart' as tmi;
 
 var client = tmi.Client(
     channels: "androidedelvalle",
