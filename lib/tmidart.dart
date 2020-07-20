@@ -3,7 +3,7 @@ library tmidart;
 import 'package:websok/io.dart';
 import 'package:eventify/eventify.dart';
 
-import 'message.dart';
+import 'src/message.dart';
 
 class Client {
   final String channels;
