@@ -1,4 +1,4 @@
-import 'package:tmi/tmidart.dart' as tmi;
+import 'package:tmi/tmi.dart' as tmi;
 
 void main() {
   var client = tmi.Client(
