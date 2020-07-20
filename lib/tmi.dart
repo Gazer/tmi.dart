@@ -4,6 +4,7 @@ import 'package:websok/io.dart';
 import 'package:eventify/eventify.dart';
 
 import 'src/message.dart';
+import 'src/utils.dart' as _;
 
 class Client {
   final String channels;
@@ -99,12 +100,12 @@ class Client {
       _emit("raw_message", [message]);
     }
 
-    var channel = _channel(message.params[0]);
-    var msg = _get(message.params, 1);
+    var channel = _.channel(message.params[0]);
+    var msg = _.get(message.params, 1);
     var msgid = message.tags["msg-id"];
 
     // Parse badges, badge-info and emotes..
-    message.tags.addAll(_badges(_badgeInfo(_emotes(message.tags))));
+    message.tags.addAll(_.badges(_.badgeInfo(_.emotes(message.tags))));
 
     // Transform IRCv3 tags..
     if (message.tags.isNotEmpty) {
@@ -126,7 +127,7 @@ class Client {
           } else if (value == "0") {
             value = false;
           } else if (value.runtimeType == String) {
-            value = _unescapeIRC(value);
+            value = _.unescapeIRC(value);
           }
           tags[key] = value;
         }
@@ -189,7 +190,7 @@ class Client {
         case "USERNOTICE":
           var username = message.tags["display-name"] ?? message.tags["login"];
           var plan = message.tags["msg-param-sub-plan"] ?? "";
-          var planName = _unescapeIRC(message.tags["msg-param-sub-plan-name"]);
+          var planName = _.unescapeIRC(message.tags["msg-param-sub-plan-name"]);
           var prime = plan.contains("Prime");
           var methods = {prime, plan, planName};
           var userstate = message.tags;
@@ -367,7 +368,7 @@ class Client {
             this.lastJoined = channel;
             // this.channels.push(channel);
             //this.log.info(`Joined ${channel}`);
-            _emit("join", [channel, _username(username), true]);
+            _emit("join", [channel, _.username(username), true]);
           }
 
           // Emote-sets has changed, update it..
@@ -387,7 +388,7 @@ class Client {
           //}
           break;
         case "ROOMSTATE":
-          if (_channel(lastJoined) == channel) {
+          if (_.channel(lastJoined) == channel) {
             _emit("_promiseJoin", [channel]);
           }
 
@@ -463,7 +464,7 @@ class Client {
           }
           message.tags["message-type"] = "whisper";
 
-          var from = _channel(message.tags['username']);
+          var from = _.channel(message.tags['username']);
           // Emit for both, whisper and message..
           _emit("whisper", [from, message.tags, msg, false]);
           _emit("message", [from, message.tags, msg, false]);
@@ -473,7 +474,7 @@ class Client {
           message.tags['username'] = message.prefix.split("!")[0];
 
           if (message.tags['username'] == "jtv") {
-            var name = _username(msg.split(" ")[0]);
+            var name = _.username(msg.split(" ")[0]);
             var autohost = msg.contains("auto");
             // Someone is hosting the channel and the message contains how many viewers..
             if (msg.contains("hosting you for")) {
@@ -516,7 +517,7 @@ class Client {
   }
 
   Future _join(String channel) async {
-    channel = _channel(channel);
+    channel = _.channel(channel);
 
     _sendCommand(null, null, "JOIN $channel", () {
       // no-op
@@ -526,7 +527,7 @@ class Client {
     var hasFulfilled = false;
     listener = (Event ev, context) {
       var eventChannel = (ev.eventData as List)[0];
-      if (channel == _channel(eventChannel)) {
+      if (channel == _.channel(eventChannel)) {
         hasFulfilled = true;
         emitter.removeListener("_promiseJoin", listener);
         print("JOINED!");
@@ -548,7 +549,7 @@ class Client {
 
     // Executing a command on a channel..
     if (channel != null && channel.isNotEmpty) {
-      var chan = _channel(channel);
+      var chan = _.channel(channel);
       print("[${chan}] Executing command: ${command}");
       _sok.send("PRIVMSG ${chan} :${command}");
     } else {
@@ -558,90 +559,6 @@ class Client {
       _sok.send(command);
     }
     return fn();
-  }
-
-  String _channel(String str) {
-    var channel = (str ?? "").toLowerCase();
-    return channel[0] == "#" ? channel : "#" + channel;
-  }
-
-  String _username(String str) {
-    var channel = (str ?? "").toLowerCase();
-    return channel[0] == "#" ? channel.substring(1) : channel;
-  }
-
-  String _get(List<String> list, int index) {
-    if (index >= list.length) return null;
-
-    return list[index];
-  }
-
-  // Escaping values:
-  // http://ircv3.net/specs/core/message-tags-3.2.html#escaping-values
-  String _unescapeIRC(String msg) {
-    var unescapeIRCRegex = RegExp(r"\\([sn:r\\])", caseSensitive: false);
-    var ircEscapedChars = {'s': ' ', 'n': '', ':': ';', 'r': ''};
-
-    if (msg == null || !msg.contains('\\')) return msg;
-
-    msg.replaceAllMapped(
-      unescapeIRCRegex,
-      (match) => ircEscapedChars[match[1]] ?? match[1],
-    );
-  }
-
-  Map<String, dynamic> _emotes(Map<String, dynamic> tags) {
-    return _parseComplexTag(tags, "emotes", "/", ":", ",");
-  }
-
-  // Parse Twitch badges..
-  Map<String, dynamic> _badges(Map<String, dynamic> tags) {
-    return _parseComplexTag(tags, "badges");
-  }
-
-  // Parse Twitch badge-info..
-  Map<String, dynamic> _badgeInfo(Map<String, dynamic> tags) {
-    return _parseComplexTag(tags, "badge-info");
-  }
-
-  Map<String, dynamic> _parseComplexTag(
-    Map<String, dynamic> tags,
-    String tagKey, [
-    String splA = ",",
-    String splB = "/",
-    String splC = null,
-  ]) {
-    var raw = tags[tagKey];
-
-    if (raw == null) {
-      return tags;
-    }
-
-    var tagIsString = raw.runtimeType == String;
-    tags[tagKey + "-raw"] = tagIsString ? raw : null;
-
-    if (raw == true) {
-      tags[tagKey] = null;
-      return tags;
-    }
-
-    tags[tagKey] = {};
-
-    if (tagIsString) {
-      var spl = (raw as String).split(splA);
-
-      for (var i = 0; i < spl.length; i++) {
-        var parts = spl[i].split(splB);
-        if (parts.length > 1) {
-          dynamic val = parts[1];
-          if (splC != null && val.isNotEmpty) {
-            val = val.split(splC);
-          }
-          tags[tagKey][parts[0]] = val ?? null;
-        }
-      }
-    }
-    return tags;
   }
 
   _updateEmoteset(String sets) {
