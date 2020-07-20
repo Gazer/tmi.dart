@@ -1,6 +1,6 @@
 class Message {
   final String raw;
-  final Map<String, String> tags;
+  final Map<String, dynamic> tags;
   final String prefix;
   final String command;
   final List<String> params;
@@ -22,7 +22,7 @@ class Message {
     var position = 0;
     var nextspace = 0;
 
-    Map<String, String> tags = {};
+    Map<String, dynamic> tags = {};
     String prefix = "";
     String command = "";
     List<String> params = [];

@@ -17,6 +17,8 @@ class Client {
   Map<String, dynamic> globaluserstate;
   Map<String, dynamic> userstate;
   String lastJoined;
+  Map<String, List<String>> moderators = Map();
+  Map<String, String> emotes;
 
   Client({this.channels, this.secure})
       : _sok = IOWebsok(host: 'irc-ws.chat.twitch.tv', tls: secure);
@@ -93,16 +95,37 @@ class Client {
   }
 
   void _handleMessage(Message message) {
+    if (emitter.getListenersCount("raw_message") > 0) {
+      _emit("raw_message", [message]);
+    }
+
     var channel = _channel(message.params[0]);
     var msg = _get(message.params, 1);
     var msgid = message.tags["msg-id"];
 
     // Parse badges, badge-info and emotes..
-    // TODO
-    // message.tags = parse.badges(parse.badgeInfo(parse.emotes(message.tags)));
+    message.tags.addAll(_badges(_badgeInfo(_emotes(message.tags))));
 
     // Transform IRCv3 tags..
-    // TODO
+    if (message.tags.isNotEmpty) {
+      var tags = message.tags;
+      for (var key in tags.keys) {
+        if (!["msg-param-streak-months", "emote-sets", "ban-duration", "bits"]
+            .contains(key)) {
+          dynamic value = tags[key];
+          if (value.runtimeType == bool) {
+            value = null;
+          } else if (value == "1") {
+            value = true;
+          } else if (value == "0") {
+            value = false;
+          } else if (value.runtimeType == String) {
+            value = _unescapeIRC(value);
+          }
+          tags[key] = value;
+        }
+      }
+    }
 
     // Messages with no prefix..
     if (message.prefix.isEmpty) {
@@ -165,11 +188,12 @@ class Client {
           var methods = {prime, plan, planName};
           var userstate = message.tags;
           var streakMonths =
-              int.tryParse(message.tags["msg-param-streak-months"]) ?? 0;
+              int.tryParse(message.tags["msg-param-streak-months"] ?? "") ?? 0;
           var recipient = message.tags["msg-param-recipient-display-name"] ??
               message.tags["msg-param-recipient-user-name"];
           var giftSubCount =
-              int.tryParse(message.tags["msg-param-mass-gift-count"]) ?? 0;
+              int.tryParse(message.tags["msg-param-mass-gift-count"] ?? "") ??
+                  0;
           userstate["message-type"] = msgid;
 
           switch (msgid) {
@@ -272,8 +296,30 @@ class Client {
           break;
         // Someone has been timed out or chat has been cleared by a moderator..
         case "CLEARCHAT":
-          // TODO
-          print("CLEARCHAT: $msgid");
+          // User has been banned / timed out by a moderator..
+          if (message.params.length > 1) {
+            // Duration returns null if it's a ban, otherwise it's a timeout..
+            var duration = message.tags["ban-duration"] ?? null;
+
+            if (duration == null) {
+              //this.log.info(`[${channel}] ${msg} has been banned.`);
+              _emit("ban", [channel, msg, null, message.tags]);
+            } else {
+              //this.log.info(`[${channel}] ${msg} has been timed out for ${duration} seconds.`);
+              _emit("timeout", [
+                channel,
+                msg,
+                null,
+                int.tryParse(duration) ?? 0,
+                message.tags
+              ]);
+            }
+          } else {
+            // Chat was cleared by a moderator..
+            // this.log.info(`[${channel}] Chat was cleared by a moderator.`);
+            _emit("clearchat", [channel]);
+            _emit("_promiseClear", [null]);
+          }
           break;
         // Someone's message has been deleted
         case "CLEARMSG":
@@ -296,8 +342,35 @@ class Client {
           print("RECONNECT: $msgid");
           break;
         case "USERSTATE":
-          // TODO
-          print("USERSTATE: $msgid");
+          message.tags['username'] = this.username;
+
+          // Add the client to the moderators of this room..
+          if (message.tags["user-type"] == "mod") {
+            if (!moderators.containsKey(lastJoined)) {
+              moderators[this.lastJoined] = [];
+            }
+            if (!this.moderators[this.lastJoined].contains(this.username)) {
+              this.moderators[this.lastJoined].add(this.username);
+            }
+          }
+
+          // Logged in and username doesn't start with justinfan..
+          if (!this.username.contains("justinfan") &&
+              this.userstate[channel] == null) {
+            this.userstate[channel] = message.tags;
+            this.lastJoined = channel;
+            // this.channels.push(channel);
+            //this.log.info(`Joined ${channel}`);
+            _emit("join", [channel, _username(username), true]);
+          }
+
+          // Emote-sets has changed, update it..
+          if (message.tags["emote-sets"] != this.emotes) {
+            print("${message.tags["emote-sets"]}");
+            _updateEmoteset(message.tags["emote-sets"]);
+          }
+
+          this.userstate[channel] = message.tags;
           break;
         case "GLOBALUSERSTATE":
           this.globaluserstate = message.tags;
@@ -509,6 +582,64 @@ class Client {
       unescapeIRCRegex,
       (match) => ircEscapedChars[match[1]] ?? match[1],
     );
+  }
+
+  Map<String, dynamic> _emotes(Map<String, dynamic> tags) {
+    return _parseComplexTag(tags, "emotes", "/", ":", ",");
+  }
+
+  // Parse Twitch badges..
+  Map<String, dynamic> _badges(Map<String, dynamic> tags) {
+    return _parseComplexTag(tags, "badges");
+  }
+
+  // Parse Twitch badge-info..
+  Map<String, dynamic> _badgeInfo(Map<String, dynamic> tags) {
+    return _parseComplexTag(tags, "badge-info");
+  }
+
+  Map<String, dynamic> _parseComplexTag(
+    Map<String, dynamic> tags,
+    String tagKey, [
+    String splA = ",",
+    String splB = "/",
+    String splC = null,
+  ]) {
+    var raw = tags[tagKey];
+
+    if (raw == null) {
+      return tags;
+    }
+
+    var tagIsString = raw.runtimeType == String;
+    tags[tagKey + "-raw"] = tagIsString ? raw : null;
+
+    if (raw == true) {
+      tags[tagKey] = null;
+      return tags;
+    }
+
+    tags[tagKey] = {};
+
+    if (tagIsString) {
+      var spl = (raw as String).split(splA);
+
+      for (var i = 0; i < spl.length; i++) {
+        var parts = spl[i].split(splB);
+        if (parts.length > 1) {
+          dynamic val = parts[1];
+          if (splC != null && val.isNotEmpty) {
+            val = val.split(splC);
+          }
+          tags[tagKey][parts[0]] = val ?? null;
+        }
+      }
+    }
+    return tags;
+  }
+
+  _updateEmoteset(String sets) {
+    // this.emotes = sets;
   }
 
   _emit(String type, [List params]) {

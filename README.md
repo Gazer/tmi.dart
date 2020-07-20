@@ -68,3 +68,4 @@ This is the events that this library currently support (more will be added in th
 * cheer
 * action
 * chat
+* raw_message
