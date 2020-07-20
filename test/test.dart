@@ -15,4 +15,7 @@ void main() {
       print("${channel}> ${username} join");
     }
   });
+  client.on("raided", (channel, username, viewers, userstate) {
+    print("${channel}> === RAID === ${viewers} from ${username}");
+  });
 }

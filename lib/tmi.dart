@@ -110,8 +110,13 @@ class Client {
     if (message.tags.isNotEmpty) {
       var tags = message.tags;
       for (var key in tags.keys) {
-        if (!["msg-param-streak-months", "emote-sets", "ban-duration", "bits"]
-            .contains(key)) {
+        if (![
+          "msg-param-streak-months",
+          "msg-param-viewerCount",
+          "emote-sets",
+          "ban-duration",
+          "bits"
+        ].contains(key)) {
           dynamic value = tags[key];
           if (value.runtimeType == bool) {
             value = null;
