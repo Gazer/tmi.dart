@@ -113,6 +113,7 @@ class Client {
         if (![
           "msg-param-streak-months",
           "msg-param-viewerCount",
+          "msg-param-mass-gift-count",
           "emote-sets",
           "ban-duration",
           "bits"
