@@ -1,0 +1,15 @@
+name: tmi
+description: Dart library for the Twitch Messaging Interface. (Twitch.tv)
+version: 0.0.1
+author: Ricardo Markiewicz <ricardo.markiewicz@gmail.com>
+homepage: https://github.com/Gazer/tmi.dart
+
+environment:
+  sdk: ">=2.7.0 <3.0.0"
+
+dependencies:
+  websok: ^2.1.2
+  eventify: ^0.1.4
+
+dev_dependencies:
+
