@@ -22,7 +22,7 @@ String unescapeIRC(String msg) {
 
   if (msg == null || !msg.contains('\\')) return msg;
 
-  msg.replaceAllMapped(
+  return msg.replaceAllMapped(
     unescapeIRCRegex,
     (match) => ircEscapedChars[match[1]] ?? match[1],
   );
