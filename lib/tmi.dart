@@ -1,5 +1,6 @@
 library tmidart;
 
+import 'package:logger/logger.dart';
 import 'package:websok/io.dart';
 import 'package:eventify/eventify.dart';
 
@@ -7,6 +8,10 @@ import 'src/message.dart';
 import 'src/utils.dart' as _;
 
 class Client {
+  var log = Logger(
+    printer: PrettyPrinter(),
+  );
+
   final String channels;
   final bool secure;
   final EventEmitter emitter = new EventEmitter();
@@ -292,12 +297,13 @@ class Client {
           var viewers = int.tryParse(msgSplit[1]) ?? 0;
           // Stopped hosting..
           if (msgSplit[0] == "-") {
-            // this.log.info(`[${channel}] Exited host mode.`);
+            log.i("[${channel}] Exited host mode.");
             _emit("unhost", [channel, viewers]);
             _emit("_promiseUnhost");
           } else {
             // Now hosting..
-            // this.log.info(`[${channel}] Now hosting ${msgSplit[0]} for ${viewers} viewer(s).`);
+            log.i(
+                "[${channel}] Now hosting ${msgSplit[0]} for ${viewers} viewer(s).");
             _emit("hosting", [channel, msgSplit[0], viewers]);
           }
           break;
@@ -309,10 +315,11 @@ class Client {
             var duration = message.tags["ban-duration"] ?? null;
 
             if (duration == null) {
-              //this.log.info(`[${channel}] ${msg} has been banned.`);
+              log.i("[${channel}] ${msg} has been banned.");
               _emit("ban", [channel, msg, null, message.tags]);
             } else {
-              //this.log.info(`[${channel}] ${msg} has been timed out for ${duration} seconds.`);
+              log.i(
+                  "[${channel}] ${msg} has been timed out for ${duration} seconds.");
               _emit("timeout", [
                 channel,
                 msg,
@@ -323,7 +330,7 @@ class Client {
             }
           } else {
             // Chat was cleared by a moderator..
-            // this.log.info(`[${channel}] Chat was cleared by a moderator.`);
+            log.i("[${channel}] Chat was cleared by a moderator.");
             _emit("clearchat", [channel]);
             _emit("_promiseClear", [null]);
           }
@@ -336,7 +343,7 @@ class Client {
             var userstate = message.tags;
             userstate["message-type"] = "messagedeleted";
 
-            // this.log.info(`[${channel}] ${username}'s message has been deleted.`);
+            log.i("[${channel}] ${username}'s message has been deleted.");
             _emit(
               "messagedeleted",
               [channel, username, deletedMessage, userstate],
@@ -367,13 +374,12 @@ class Client {
             this.userstate[channel] = message.tags;
             this.lastJoined = channel;
             // this.channels.push(channel);
-            //this.log.info(`Joined ${channel}`);
+            log.i("Joined ${channel}");
             _emit("join", [channel, _.username(username), true]);
           }
 
           // Emote-sets has changed, update it..
           if (message.tags["emote-sets"] != this.emotes) {
-            print("${message.tags["emote-sets"]}");
             _updateEmoteset(message.tags["emote-sets"]);
           }
 
@@ -422,7 +428,7 @@ class Client {
           if (username.contains("justinfan") && username == nick) {
             this.lastJoined = channel;
             //this.channels.push(channel);
-            //this.log.info(`Joined ${channel}`);
+            log.i("Joined ${channel}");
             _emit("join", [channel, nick, true]);
           }
 
@@ -447,7 +453,7 @@ class Client {
             //var index = this.opts.channels.indexOf(channel);
             //if(index !== -1) { this.opts.channels.splice(index, 1); }
 
-            //this.log.info(`Left ${channel}`);
+            log.i("Left ${channel}");
             _emit("_promisePart");
           }
 
@@ -456,7 +462,7 @@ class Client {
           break;
         case "WHISPER":
           var nick = message.prefix.split("!")[0];
-          //this.log.info(`[WHISPER] <${nick}>: ${msg}`);
+          log.i("[WHISPER] <${nick}>: ${msg}");
 
           // Update the tags to provide the username..
           if (!message.tags.containsKey("username")) {
