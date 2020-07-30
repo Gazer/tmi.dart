@@ -3,7 +3,7 @@ import 'package:tmi/src/message.dart';
 import 'package:tmi/tmi.dart';
 import 'package:tmi/src/utils.dart' as _;
 
-import 'command.dart';
+import '../command.dart';
 
 // Someone's message has been deleted
 class ClearMsg extends Command {

@@ -5,6 +5,8 @@ import 'package:websok/io.dart';
 import 'package:eventify/eventify.dart';
 
 import 'src/commands/command.dart';
+import 'src/commands/ping.dart';
+import 'src/commands/pong.dart';
 import 'src/message.dart';
 import 'src/utils.dart' as _;
 
@@ -28,9 +30,16 @@ class Client {
   Map<String, String> emotes;
 
   Map<String, Command> twitchCommands;
+  Map<String, Command> noScopeCommands;
+  Map<String, Command> userCommands;
 
   Client({this.channels, this.secure})
       : _sok = IOWebsok(host: 'irc-ws.chat.twitch.tv', tls: secure) {
+    noScopeCommands = {
+      "PING": Ping(this, log),
+      "PONG": Pong(this, log),
+    };
+
     twitchCommands = {
       "002": NoOp(this, log),
       "003": NoOp(this, log),
@@ -45,6 +54,13 @@ class Client {
       "CLEARMSG": ClearMsg(this, log),
       "USERSTATE": UserState(this, log),
       "ROOMSTATE": RoomState(this, log),
+    };
+
+    userCommands = {
+      "JOIN": Join(this, log),
+      "PART": Part(this, log),
+      "WHISPER": Whisper(this, log),
+      "PRIVMSG": PrivMsg(this, log),
     };
   }
 
@@ -85,6 +101,12 @@ class Client {
           throw Exception("Got more params that I can handle");
       }
     });
+  }
+
+  void send(String command) {
+    if (_wsReady()) {
+      _sok.send(command);
+    }
   }
 
   bool _wsReady() {
@@ -161,29 +183,9 @@ class Client {
 
     // Messages with no prefix..
     if (message.prefix.isEmpty) {
-      switch (message.command) {
-        // Received PING from server..
-        case "PING":
-          _emit("ping");
-          if (_wsReady()) {
-            _sok.send("PONG");
-          }
-          break;
-
-        // Received PONG from server, return current latency..
-        case "PONG":
-          var currDate = DateTime.now();
-          currentLatency = (currDate.millisecondsSinceEpoch -
-                  latency.millisecondsSinceEpoch) ~/
-              1000;
-          _emit("pong", [currentLatency]);
-
-          // clearTimeout(this.pingTimeout);
-          break;
-
-        default:
-          print("Could not parse message with no prefix:\n${message.raw}");
-          break;
+      if (noScopeCommands.containsKey(message.command)) {
+      } else {
+        print("Could not parse message with no prefix:\n${message.raw}");
       }
     } else if (message.prefix == "tmi.twitch.tv") {
       // Messages with "tmi.twitch.tv" as a prefix..
@@ -236,102 +238,12 @@ class Client {
           break;
         case "366":
           break;
-        case "JOIN":
-          var nick = message.prefix.split("!")[0];
-          // Joined a channel as a justinfan (anonymous) user..
-          if (username.contains("justinfan") && username == nick) {
-            this.lastJoined = channel;
-            //this.channels.push(channel);
-            log.i("Joined ${channel}");
-            _emit("join", [channel, nick, true]);
-          }
-
-          // Someone else joined the channel, just emit the join event..
-          if (this.username != nick) {
-            _emit("join", [channel, nick, false]);
-          }
-          break;
-        case "PART":
-          var isSelf = false;
-          var nick = message.prefix.split("!")[0];
-          // Client left a channel..
-          if (this.username == nick) {
-            isSelf = true;
-            if (userstate[channel] != null) {
-              userstate.remove(channel);
-            }
-
-            var index = this.channels.indexOf(channel);
-            //if(index != -1) { this.channels.splice(index, 1); }
-
-            //var index = this.opts.channels.indexOf(channel);
-            //if(index !== -1) { this.opts.channels.splice(index, 1); }
-
-            log.i("Left ${channel}");
-            _emit("_promisePart");
-          }
-
-          // Client or someone else left the channel, emit the part event..
-          _emit("part", [channel, nick, isSelf]);
-          break;
-        case "WHISPER":
-          var nick = message.prefix.split("!")[0];
-          log.i("[WHISPER] <${nick}>: ${msg}");
-
-          // Update the tags to provide the username..
-          if (!message.tags.containsKey("username")) {
-            message.tags['username'] = nick;
-          }
-          message.tags["message-type"] = "whisper";
-
-          var from = _.channel(message.tags['username']);
-          // Emit for both, whisper and message..
-          _emit("whisper", [from, message.tags, msg, false]);
-          _emit("message", [from, message.tags, msg, false]);
-          break;
-        case "PRIVMSG":
-          // Add username (lowercase) to the tags..
-          message.tags['username'] = message.prefix.split("!")[0];
-
-          if (message.tags['username'] == "jtv") {
-            var name = _.username(msg.split(" ")[0]);
-            var autohost = msg.contains("auto");
-            // Someone is hosting the channel and the message contains how many viewers..
-            if (msg.contains("hosting you for")) {
-              var count = int.tryParse(msg);
-
-              _emit("hosted", [channel, name, count, autohost]);
-            }
-
-            // Some is hosting the channel, but no viewer(s) count provided in the message..
-            else if (msg.contains("hosting you")) {
-              _emit("hosted", [channel, name, 0, autohost]);
-            }
-          } else {
-            // Message is an action (/me <message>)..
-            var actionMessage =
-                RegExp(r"/^\u0001ACTION ([^\u0001]+)\u0001$/").firstMatch(msg);
-            message.tags["message-type"] =
-                actionMessage != null ? "action" : "chat";
-            msg = actionMessage != null ? actionMessage : msg;
-            // Check for Bits prior to actions message
-            if (message.tags.containsKey("bits")) {
-              _emit("cheer", [channel, message.tags, msg]);
-            } else {
-              if (actionMessage != null) {
-                // Action, tipically /me command
-                _emit("message", [channel, message.tags, msg, false]);
-                _emit("action", [channel, message.tags, msg, false]);
-              } else {
-                // Message is a regular chat message..
-                _emit("message", [channel, message.tags, msg, false]);
-                _emit("chat", [channel, message.tags, msg, false]);
-              }
-            }
-          }
-          break;
         default:
-          print("COMMAND ${message.command} not yet implemented");
+          if (userCommands.containsKey(message.command)) {
+            userCommands[message.command].call(message);
+          } else {
+            print("COMMAND ${message.command} not yet implemented");
+          }
       }
     }
   }

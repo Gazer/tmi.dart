@@ -4,13 +4,17 @@ import 'package:tmi/src/utils.dart' as _;
 import 'package:tmi/tmi.dart';
 
 export 'no_op.dart';
-export 'user_notice.dart';
-export 'connected.dart';
-export 'host_target.dart';
-export 'clear_chat.dart';
-export 'clear_msg.dart';
-export 'user_state.dart';
-export 'room_state.dart';
+export 'tmi.twitch.tv/user_notice.dart';
+export 'tmi.twitch.tv/connected.dart';
+export 'tmi.twitch.tv/host_target.dart';
+export 'tmi.twitch.tv/clear_chat.dart';
+export 'tmi.twitch.tv/clear_msg.dart';
+export 'tmi.twitch.tv/user_state.dart';
+export 'tmi.twitch.tv/room_state.dart';
+export 'user/join.dart';
+export 'user/part.dart';
+export 'user/whisper.dart';
+export 'user/priv_msg.dart';
 
 abstract class Command {
   final Client client;

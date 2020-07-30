@@ -3,7 +3,7 @@ import 'package:tmi/src/message.dart';
 import 'package:tmi/tmi.dart';
 import 'package:tmi/src/utils.dart' as _;
 
-import 'command.dart';
+import '../command.dart';
 
 class UserState extends Command {
   UserState(Client client, Logger log) : super(client, log);

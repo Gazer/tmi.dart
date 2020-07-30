@@ -28,4 +28,7 @@ void main() {
   client.on("roomstate", (channel, tags) {
     print("${channel} JOINING $tags");
   });
+  client.on("pong", (latency) {
+    print("pong delayed by $latency");
+  });
 }
