@@ -2,7 +2,7 @@ import 'package:tmi/tmi.dart' as tmi;
 
 void main() {
   var client = tmi.Client(
-    channels: "ibai",
+    channels: "androidedelvalle",
     secure: true,
   );
   client.connect();
@@ -17,5 +17,15 @@ void main() {
   });
   client.on("raided", (channel, username, viewers, userstate) {
     print("${channel}> === RAID === ${viewers} from ${username}");
+  });
+  client.on("resub",
+      (channel, username, streakMonths, msg, userstate, methods) {
+    print("${channel}> CAPO $username por sus $streakMonths!: $msg");
+  });
+  client.on("subscription", (channel, username, methods, msg, userstate) {
+    print("${channel}>>>> NEW SUB: $username");
+  });
+  client.on("roomstate", (channel, tags) {
+    print("${channel} JOINING $tags");
   });
 }

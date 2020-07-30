@@ -4,6 +4,7 @@ import 'package:logger/logger.dart';
 import 'package:websok/io.dart';
 import 'package:eventify/eventify.dart';
 
+import 'src/commands/command.dart';
 import 'src/message.dart';
 import 'src/utils.dart' as _;
 
@@ -26,8 +27,26 @@ class Client {
   Map<String, List<String>> moderators = Map();
   Map<String, String> emotes;
 
+  Map<String, Command> twitchCommands;
+
   Client({this.channels, this.secure})
-      : _sok = IOWebsok(host: 'irc-ws.chat.twitch.tv', tls: secure);
+      : _sok = IOWebsok(host: 'irc-ws.chat.twitch.tv', tls: secure) {
+    twitchCommands = {
+      "002": NoOp(this, log),
+      "003": NoOp(this, log),
+      "004": NoOp(this, log),
+      "375": NoOp(this, log),
+      "376": NoOp(this, log),
+      "CAP": NoOp(this, log),
+      "372": Connected(this, log),
+      "USERNOTICE": UserNotice(this, log),
+      "HOSTTARGET": HostTarget(this, log),
+      "CLEARCHAT": ClearChat(this, log),
+      "CLEARMSG": ClearMsg(this, log),
+      "USERSTATE": UserState(this, log),
+      "ROOMSTATE": RoomState(this, log),
+    };
+  }
 
   void connect() {
     _sok.connect();
@@ -85,7 +104,8 @@ class Client {
 
     _emit("logon");
     _sok.send(
-        "CAP REQ :twitch.tv/tags twitch.tv/commands twitch.tv/membership");
+      "CAP REQ :twitch.tv/tags twitch.tv/commands twitch.tv/membership",
+    );
     if (password) {
       _sok.send("PASS $password");
     }
@@ -168,238 +188,26 @@ class Client {
     } else if (message.prefix == "tmi.twitch.tv") {
       // Messages with "tmi.twitch.tv" as a prefix..
       switch (message.command) {
-        case "002":
-        case "003":
-        case "004":
-        case "375":
-        case "376":
-        case "CAP":
-          break;
         // Retrieve username from server..
         case "001":
           username = message.params[0];
           break;
-        // Connected to server..
-        case "372":
-          _emit("connected");
-          // TODO: Check logic for time out and multichannel
-          _join(channels);
-          break;
-
         // https://github.com/justintv/Twitch-API/blob/master/chat/capabilities.md#notice
         case "NOTICE":
           // TODO
           print("NOTICE: $msgid");
-          break;
-        // Handle subanniversary / resub..
-        case "USERNOTICE":
-          var username = message.tags["display-name"] ?? message.tags["login"];
-          var plan = message.tags["msg-param-sub-plan"] ?? "";
-          var planName = _.unescapeIRC(message.tags["msg-param-sub-plan-name"]);
-          var prime = plan.contains("Prime");
-          var methods = {prime, plan, planName};
-          var userstate = message.tags;
-          var streakMonths =
-              int.tryParse(message.tags["msg-param-streak-months"] ?? "") ?? 0;
-          var recipient = message.tags["msg-param-recipient-display-name"] ??
-              message.tags["msg-param-recipient-user-name"];
-          var giftSubCount =
-              int.tryParse(message.tags["msg-param-mass-gift-count"] ?? "") ??
-                  0;
-          userstate["message-type"] = msgid;
-
-          switch (msgid) {
-            // Handle resub
-            case "resub":
-              _emit(
-                "resub",
-                [channel, username, streakMonths, msg, userstate, methods],
-              );
-              _emit(
-                "subanniversary",
-                [channel, username, streakMonths, msg, userstate, methods],
-              );
-              break;
-            // Handle sub
-            case "sub":
-              _emit(
-                "subscription",
-                [channel, username, methods, msg, userstate],
-              );
-              break;
-            // Handle gift sub
-            case "subgift":
-              _emit(
-                "subgift",
-                [
-                  channel,
-                  username,
-                  streakMonths,
-                  recipient,
-                  methods,
-                  userstate,
-                ],
-              );
-              break;
-            // Handle anonymous gift sub
-            // Need proof that this event occur
-            case "anonsubgift":
-              _emit(
-                "anonsubgift",
-                [channel, streakMonths, recipient, methods, userstate],
-              );
-              break;
-            // Handle random gift subs
-            case "submysterygift":
-              _emit(
-                "submysterygift",
-                [channel, username, giftSubCount, methods, userstate],
-              );
-              break;
-            // Handle anonymous random gift subs
-            // Need proof that this event occur
-            case "anonsubmysterygift":
-              _emit(
-                "anonsubmysterygift",
-                [channel, giftSubCount, methods, userstate],
-              );
-              break;
-            // Handle user upgrading from Prime to a normal tier sub
-            case "primepaidupgrade":
-              _emit(
-                "primepaidupgrade",
-                [channel, username, methods, userstate],
-              );
-              break;
-            // Handle user upgrading from a gifted sub
-            case "giftpaidupgrade":
-              var sender = message.tags["msg-param-sender-name"] ??
-                  message.tags["msg-param-sender-login"];
-              _emit("giftpaidupgrade", [channel, username, sender, userstate]);
-              break;
-            // Handle user upgrading from an anonymous gifted sub
-            case "anongiftpaidupgrade":
-              _emit("anongiftpaidupgrade", [channel, username, userstate]);
-              break;
-            // Handle raid
-            case "raid":
-              var username = message.tags["msg-param-displayName"] ??
-                  message.tags["msg-param-login"];
-              var viewers =
-                  int.tryParse(message.tags["msg-param-viewerCount"]) ?? 0;
-              _emit("raided", [channel, username, viewers, userstate]);
-              break;
-          }
-          break;
-        // Channel is now hosting another channel or exited host mode..
-        case "HOSTTARGET":
-          var msgSplit = msg.split(" ");
-          var viewers = int.tryParse(msgSplit[1]) ?? 0;
-          // Stopped hosting..
-          if (msgSplit[0] == "-") {
-            log.i("[${channel}] Exited host mode.");
-            _emit("unhost", [channel, viewers]);
-            _emit("_promiseUnhost");
-          } else {
-            // Now hosting..
-            log.i(
-                "[${channel}] Now hosting ${msgSplit[0]} for ${viewers} viewer(s).");
-            _emit("hosting", [channel, msgSplit[0], viewers]);
-          }
-          break;
-        // Someone has been timed out or chat has been cleared by a moderator..
-        case "CLEARCHAT":
-          // User has been banned / timed out by a moderator..
-          if (message.params.length > 1) {
-            // Duration returns null if it's a ban, otherwise it's a timeout..
-            var duration = message.tags["ban-duration"] ?? null;
-
-            if (duration == null) {
-              log.i("[${channel}] ${msg} has been banned.");
-              _emit("ban", [channel, msg, null, message.tags]);
-            } else {
-              log.i(
-                  "[${channel}] ${msg} has been timed out for ${duration} seconds.");
-              _emit("timeout", [
-                channel,
-                msg,
-                null,
-                int.tryParse(duration) ?? 0,
-                message.tags
-              ]);
-            }
-          } else {
-            // Chat was cleared by a moderator..
-            log.i("[${channel}] Chat was cleared by a moderator.");
-            _emit("clearchat", [channel]);
-            _emit("_promiseClear", [null]);
-          }
-          break;
-        // Someone's message has been deleted
-        case "CLEARMSG":
-          if (message.params.length > 1) {
-            var username = message.tags["login"];
-            var deletedMessage = msg;
-            var userstate = message.tags;
-            userstate["message-type"] = "messagedeleted";
-
-            log.i("[${channel}] ${username}'s message has been deleted.");
-            _emit(
-              "messagedeleted",
-              [channel, username, deletedMessage, userstate],
-            );
-          }
           break;
         // Received a reconnection request from the server..
         case "RECONNECT":
           // TODO
           print("RECONNECT: $msgid");
           break;
-        case "USERSTATE":
-          message.tags['username'] = this.username;
-
-          // Add the client to the moderators of this room..
-          if (message.tags["user-type"] == "mod") {
-            if (!moderators.containsKey(lastJoined)) {
-              moderators[this.lastJoined] = [];
-            }
-            if (!this.moderators[this.lastJoined].contains(this.username)) {
-              this.moderators[this.lastJoined].add(this.username);
-            }
-          }
-
-          // Logged in and username doesn't start with justinfan..
-          if (!this.username.contains("justinfan") &&
-              this.userstate[channel] == null) {
-            this.userstate[channel] = message.tags;
-            this.lastJoined = channel;
-            // this.channels.push(channel);
-            log.i("Joined ${channel}");
-            _emit("join", [channel, _.username(username), true]);
-          }
-
-          // Emote-sets has changed, update it..
-          if (message.tags["emote-sets"] != this.emotes) {
-            _updateEmoteset(message.tags["emote-sets"]);
-          }
-
-          this.userstate[channel] = message.tags;
-          break;
         case "GLOBALUSERSTATE":
           this.globaluserstate = message.tags;
-
           // Received emote-sets..
           //if(typeof message.tags["emote-sets"] !== "undefined") {
           //	this._updateEmoteset(message.tags["emote-sets"]);
           //}
-          break;
-        case "ROOMSTATE":
-          if (_.channel(lastJoined) == channel) {
-            _emit("_promiseJoin", [channel]);
-          }
-
-          message.tags['channel'] = channel;
-          _emit("roomstate", [channel, message.tags]);
           break;
         // TODO: subs-only"
         // Wrong cluster..
@@ -407,7 +215,13 @@ class Client {
           break;
 
         default:
-          print("Could not parse message from tmi.twitch.tv:\n${message.raw}");
+          if (twitchCommands.containsKey(message.command)) {
+            var command = twitchCommands[message.command];
+            command.call(message);
+          } else {
+            print(
+                "Could not parse message from tmi.twitch.tv:\n${message.raw}");
+          }
           break;
       }
     } else if (message.prefix == "jtv") {
@@ -522,28 +336,8 @@ class Client {
     }
   }
 
-  Future _join(String channel) async {
-    channel = _.channel(channel);
-
-    _sendCommand(null, null, "JOIN $channel", () {
-      // no-op
-    });
-
-    EventCallback listener;
-    var hasFulfilled = false;
-    listener = (Event ev, context) {
-      var eventChannel = (ev.eventData as List)[0];
-      if (channel == _.channel(eventChannel)) {
-        hasFulfilled = true;
-        emitter.removeListener("_promiseJoin", listener);
-        print("JOINED!");
-      }
-    };
-    emitter.on("_promiseJoin", this, listener);
-
-    // TODO: Race timeout and return future
-    //Future.delayed(Duration(seconds: 10))
-    //.then((value) => if (!hasFulfilled) return false);
+  Future<bool> sendCommand(delay, String channel, command, Function fn) async {
+    return _sendCommand(delay, channel, command, fn);
   }
 
   Future<bool> _sendCommand(delay, String channel, command, Function fn) async {
@@ -567,8 +361,8 @@ class Client {
     return fn();
   }
 
-  _updateEmoteset(String sets) {
-    // this.emotes = sets;
+  emit(String type, [List params]) {
+    _emit(type, params);
   }
 
   _emit(String type, [List params]) {
