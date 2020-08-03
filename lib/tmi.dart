@@ -61,6 +61,8 @@ class Client {
       "PART": Part(this, log),
       "WHISPER": Whisper(this, log),
       "PRIVMSG": PrivMsg(this, log),
+      "366": NoOp(this, log),
+      "353": Names(this, log),
     };
   }
 
@@ -147,8 +149,6 @@ class Client {
       _emit("raw_message", [message]);
     }
 
-    var channel = _.channel(message.params[0]);
-    var msg = _.get(message.params, 1);
     var msgid = message.tags["msg-id"];
 
     // Parse badges, badge-info and emotes..
@@ -184,6 +184,7 @@ class Client {
     // Messages with no prefix..
     if (message.prefix.isEmpty) {
       if (noScopeCommands.containsKey(message.command)) {
+        noScopeCommands[message.command].call(message);
       } else {
         print("Could not parse message with no prefix:\n${message.raw}");
       }
@@ -221,8 +222,9 @@ class Client {
             var command = twitchCommands[message.command];
             command.call(message);
           } else {
-            print(
-                "Could not parse message from tmi.twitch.tv:\n${message.raw}");
+            log.e(
+              "Could not parse message from tmi.twitch.tv:\n${message.raw}",
+            );
           }
           break;
       }
@@ -232,18 +234,10 @@ class Client {
       print("JTV NOT SUPPORTED");
     } // Anything else..
     else {
-      switch (message.command) {
-        case "353":
-          _emit("names", [message.params[2], message.params[3].split(" ")]);
-          break;
-        case "366":
-          break;
-        default:
-          if (userCommands.containsKey(message.command)) {
-            userCommands[message.command].call(message);
-          } else {
-            print("COMMAND ${message.command} not yet implemented");
-          }
+      if (userCommands.containsKey(message.command)) {
+        userCommands[message.command].call(message);
+      } else {
+        log.e("COMMAND ${message.command} not yet implemented");
       }
     }
   }
@@ -262,12 +256,12 @@ class Client {
     // Executing a command on a channel..
     if (channel != null && channel.isNotEmpty) {
       var chan = _.channel(channel);
-      print("[${chan}] Executing command: ${command}");
+      log.d("[${chan}] Executing command: ${command}");
       _sok.send("PRIVMSG ${chan} :${command}");
     } else {
       // Executing a raw command..
 
-      print("Executing command: ${command}");
+      log.d("Executing command: ${command}");
       _sok.send(command);
     }
     return fn();

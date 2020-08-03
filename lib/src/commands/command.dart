@@ -15,6 +15,7 @@ export 'user/join.dart';
 export 'user/part.dart';
 export 'user/whisper.dart';
 export 'user/priv_msg.dart';
+export 'user/names.dart';
 
 abstract class Command {
   final Client client;
