@@ -1,6 +1,7 @@
 library tmidart;
 
 import 'package:logger/logger.dart';
+import 'package:tmi/src/monitor.dart';
 import 'package:websok/io.dart';
 import 'package:eventify/eventify.dart';
 
@@ -20,6 +21,8 @@ class Client {
   final EventEmitter emitter = new EventEmitter();
 
   IOWebsok _sok;
+  Monitor _monitor;
+
   int currentLatency;
   DateTime latency = DateTime.now();
   String username;
@@ -64,6 +67,8 @@ class Client {
       "366": NoOp(this, log),
       "353": Names(this, log),
     };
+
+    _monitor = Monitor(this);
   }
 
   void connect() {
@@ -72,6 +77,10 @@ class Client {
       onData: _onData,
     );
     _onOpen();
+  }
+
+  void startMonitor() {
+    _monitor.loop();
   }
 
   Listener on(String event, Function f) {

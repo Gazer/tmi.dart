@@ -1,3 +1,9 @@
+# 0.0.3
+
+* Internal refactor and cleanups
+* No changes to the API
+* Added Ping/Pong server Monitor
+
 # 0.0.2
 
 * Code re-organization

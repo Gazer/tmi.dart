@@ -10,7 +10,8 @@ class Connected extends Command {
   @override
   void call(Message message) {
     client.emit("connected");
-    // TODO: Check logic for time out and multichannel
+    client.startMonitor();
+
     _join(client.channels);
   }
 
