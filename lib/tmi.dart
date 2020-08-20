@@ -130,7 +130,7 @@ class Client {
     _emit("connecting");
 
     // check if we have username
-    var username = "justinfan33";
+    var username = _.justinfan();
     // get token for the user name
     // generate password from token
     var password = false;

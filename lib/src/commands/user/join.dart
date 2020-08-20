@@ -14,7 +14,7 @@ class Join extends Command {
     var nick = message.prefix.split("!")[0];
 
     // Joined a channel as a justinfan (anonymous) user..
-    if (client.username.contains("justinfan") && client.username == nick) {
+    if (_.isJustinfan(client.username) && client.username == nick) {
       client.lastJoined = channel;
       //this.channels.push(channel);
       log.i("Joined ${channel}");

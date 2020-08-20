@@ -1,3 +1,5 @@
+import 'dart:math';
+
 String channel(String str) {
   var channel = (str ?? "").toLowerCase();
   return channel[0] == "#" ? channel : "#" + channel;
@@ -80,4 +82,14 @@ Map<String, dynamic> _parseComplexTag(
     }
   }
   return tags;
+}
+
+Random random = Random();
+String justinfan() {
+  return "justinfan${random.nextInt(80000) + 1000}";
+}
+
+RegExp justinFanRegex = new RegExp(r"/^(justinfan)(\d+$)/");
+bool isJustinfan(String username) {
+  return justinFanRegex.hasMatch(username);
 }

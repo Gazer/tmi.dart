@@ -25,8 +25,7 @@ class UserState extends Command {
     }
 
     // Logged in and username doesn't start with justinfan..
-    if (!client.username.contains("justinfan") &&
-        client.userstate[channel] == null) {
+    if (!_.isJustinfan(client.username) && client.userstate[channel] == null) {
       client.userstate[channel] = message.tags;
       client.lastJoined = channel;
       // this.channels.push(channel);
