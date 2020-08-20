@@ -1,3 +1,9 @@
+# 0.0.4
+
+* Pick random anon username
+* Added NOTICE event
+* More internal cleanup
+
 # 0.0.3
 
 * Internal refactor and cleanups

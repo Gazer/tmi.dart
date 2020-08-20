@@ -23,8 +23,8 @@ class Connected extends Command {
     });
 
     var hasFulfilled = false;
-    client.on("_promiseJoin", (eventChannel) {
-      if (channel == _.channel(eventChannel)) {
+    client.on("_promiseJoin", (error, joinedChannel) {
+      if (channel == _.channel(joinedChannel)) {
         hasFulfilled = true;
         //emitter.removeListener("_promiseJoin", listener);
         print("JOINED!");

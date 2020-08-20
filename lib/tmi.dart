@@ -31,6 +31,9 @@ class Client {
   String lastJoined;
   Map<String, List<String>> moderators = Map();
   Map<String, String> emotes;
+  bool wasCloseCalled;
+  bool reconnect;
+  String reason;
 
   Map<String, Command> twitchCommands;
   Map<String, Command> noScopeCommands;
@@ -44,6 +47,7 @@ class Client {
     };
 
     twitchCommands = {
+      "001": Username(this, log),
       "002": NoOp(this, log),
       "003": NoOp(this, log),
       "004": NoOp(this, log),
@@ -57,6 +61,8 @@ class Client {
       "CLEARMSG": ClearMsg(this, log),
       "USERSTATE": UserState(this, log),
       "ROOMSTATE": RoomState(this, log),
+      "SERVERCHANGE": NoOp(this, log),
+      "NOTICE": Notice(this, log),
     };
 
     userCommands = {
@@ -77,6 +83,10 @@ class Client {
       onData: _onData,
     );
     _onOpen();
+  }
+
+  void close() {
+    _sok.close();
   }
 
   void startMonitor() {
@@ -127,7 +137,7 @@ class Client {
   void _onOpen() {
     if ((_sok == null) || !_sok.isActive) return;
 
-    _emit("connecting");
+    emit("connecting");
 
     // check if we have username
     var username = _.justinfan();
@@ -135,7 +145,7 @@ class Client {
     // generate password from token
     var password = false;
 
-    _emit("logon");
+    emit("logon");
     _sok.send(
       "CAP REQ :twitch.tv/tags twitch.tv/commands twitch.tv/membership",
     );
@@ -155,7 +165,7 @@ class Client {
 
   void _handleMessage(Message message) {
     if (emitter.getListenersCount("raw_message") > 0) {
-      _emit("raw_message", [message]);
+      emit("raw_message", [message]);
     }
 
     var msgid = message.tags["msg-id"];
@@ -200,15 +210,7 @@ class Client {
     } else if (message.prefix == "tmi.twitch.tv") {
       // Messages with "tmi.twitch.tv" as a prefix..
       switch (message.command) {
-        // Retrieve username from server..
-        case "001":
-          username = message.params[0];
-          break;
         // https://github.com/justintv/Twitch-API/blob/master/chat/capabilities.md#notice
-        case "NOTICE":
-          // TODO
-          print("NOTICE: $msgid");
-          break;
         // Received a reconnection request from the server..
         case "RECONNECT":
           // TODO
@@ -223,9 +225,6 @@ class Client {
           break;
         // TODO: subs-only"
         // Wrong cluster..
-        case "SERVERCHANGE":
-          break;
-
         default:
           if (twitchCommands.containsKey(message.command)) {
             var command = twitchCommands[message.command];
@@ -276,11 +275,14 @@ class Client {
     return fn();
   }
 
-  emit(String type, [List params]) {
-    _emit(type, params);
+  void emits(List<String> types, List values) {
+    for (var i = 0; i < types.length; i++) {
+      var val = i < values.length ? values[i] : values[values.length - 1];
+      emit(types[i], val);
+    }
   }
 
-  _emit(String type, [List params]) {
+  void emit(String type, [List params]) {
     emitter.emit(type, null, params);
   }
 }

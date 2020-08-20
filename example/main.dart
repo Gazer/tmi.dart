@@ -31,4 +31,7 @@ void main() {
   client.on("pong", (latency) {
     print("pong delayed by $latency");
   });
+  client.on("notice", (channel, msgid, message) {
+    print("~~~~ $msgid ----> $message");
+  });
 }

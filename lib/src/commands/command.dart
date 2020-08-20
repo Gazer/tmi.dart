@@ -11,6 +11,8 @@ export 'tmi.twitch.tv/clear_chat.dart';
 export 'tmi.twitch.tv/clear_msg.dart';
 export 'tmi.twitch.tv/user_state.dart';
 export 'tmi.twitch.tv/room_state.dart';
+export 'tmi.twitch.tv/username.dart';
+export 'tmi.twitch.tv/notice.dart';
 export 'user/join.dart';
 export 'user/part.dart';
 export 'user/whisper.dart';

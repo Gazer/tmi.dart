@@ -89,7 +89,7 @@ String justinfan() {
   return "justinfan${random.nextInt(80000) + 1000}";
 }
 
-RegExp justinFanRegex = new RegExp(r"/^(justinfan)(\d+$)/");
+RegExp justinFanRegex = new RegExp(r"^justinfan\d+$");
 bool isJustinfan(String username) {
   return justinFanRegex.hasMatch(username);
 }

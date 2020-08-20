@@ -13,7 +13,7 @@ class RoomState extends Command {
     var channel = _.channel(message.params[0]);
 
     if (_.channel(client.lastJoined) == channel) {
-      client.emit("_promiseJoin", [channel]);
+      client.emit("_promiseJoin", [null, channel]);
     }
 
     message.tags['channel'] = channel;
