@@ -93,3 +93,7 @@ RegExp justinFanRegex = new RegExp(r"^justinfan\d+$");
 bool isJustinfan(String username) {
   return justinFanRegex.hasMatch(username);
 }
+
+RegExp tokenRegEx = new RegExp(r'oauth:');
+String token(String str) =>
+    str != null ? str.toLowerCase().replaceFirst(tokenRegEx, "") : "";

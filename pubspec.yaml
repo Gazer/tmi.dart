@@ -11,6 +11,10 @@ dependencies:
   websok: ^2.1.2
   eventify: ^0.1.4
   logger: ^0.9.1
+  http: ^0.12.2
 
 dev_dependencies:
+  test:
+  mockito: ^4.0.0
+
 

@@ -1,6 +1,5 @@
 import 'package:logger/logger.dart';
 import 'package:tmi/src/message.dart';
-import 'package:tmi/src/utils.dart' as _;
 import 'package:tmi/tmi.dart';
 
 export 'no_op.dart';
@@ -13,6 +12,7 @@ export 'tmi.twitch.tv/user_state.dart';
 export 'tmi.twitch.tv/room_state.dart';
 export 'tmi.twitch.tv/username.dart';
 export 'tmi.twitch.tv/notice.dart';
+export 'tmi.twitch.tv/global_user_state.dart';
 export 'user/join.dart';
 export 'user/part.dart';
 export 'user/whisper.dart';

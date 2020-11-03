@@ -23,6 +23,9 @@ class Client {
   IOWebsok _sok;
   Monitor _monitor;
 
+  String clientId;
+  String token;
+
   int currentLatency;
   DateTime latency = DateTime.now();
   String username;
@@ -30,7 +33,8 @@ class Client {
   Map<String, dynamic> userstate;
   String lastJoined;
   Map<String, List<String>> moderators = Map();
-  Map<String, String> emotes;
+  String emotes = "";
+  Map<String, String> emotesets = {};
   bool wasCloseCalled;
   bool reconnect;
   String reason;
@@ -63,6 +67,7 @@ class Client {
       "ROOMSTATE": RoomState(this, log),
       "SERVERCHANGE": NoOp(this, log),
       "NOTICE": Notice(this, log),
+      "GLOBALUSERSTATE": GlobalUserState(this, log),
     };
 
     userCommands = {
@@ -216,13 +221,6 @@ class Client {
           // TODO
           print("RECONNECT: $msgid");
           break;
-        case "GLOBALUSERSTATE":
-          this.globaluserstate = message.tags;
-          // Received emote-sets..
-          //if(typeof message.tags["emote-sets"] !== "undefined") {
-          //	this._updateEmoteset(message.tags["emote-sets"]);
-          //}
-          break;
         // TODO: subs-only"
         // Wrong cluster..
         default:
@@ -284,5 +282,9 @@ class Client {
 
   void emit(String type, [List params]) {
     emitter.emit(type, null, params);
+  }
+
+  String getToken() {
+    return null;
   }
 }
