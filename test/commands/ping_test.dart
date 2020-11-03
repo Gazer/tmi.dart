@@ -110,6 +110,18 @@ class FakeClient implements Client {
   bool wasEmitCalled() {
     return _wasEmitCalled;
   }
+
+  @override
+  String clientId;
+
+  @override
+  String token;
+
+  @override
+  String getToken() {
+    // TODO: implement getToken
+    throw UnimplementedError();
+  }
 }
 
 class FakeLogger implements Logger {
