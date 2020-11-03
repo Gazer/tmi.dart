@@ -2,7 +2,7 @@ import 'package:tmi/tmi.dart' as tmi;
 
 void main() {
   var client = tmi.Client(
-    channels: "androidedelvalle",
+    channels: "duendepablo",
     secure: true,
   );
   client.connect();
