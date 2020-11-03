@@ -1,6 +1,6 @@
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
-import 'package:tmi/src/commands/ping.dart';
+import 'package:tmi/src/commands/pong.dart';
 import 'package:tmi/src/message.dart';
 
 import '../mocks.dart';
@@ -8,32 +8,32 @@ import '../mocks.dart';
 void main() {
   var client;
   var logger;
+  var message = Message();
 
   setUp(() {
     client = MockClient();
     logger = MockLogger();
+    when(client.latency).thenReturn(DateTime.now());
   });
 
-  test("ensure emit ping event", () {
+  test("emits a pong event", () {
     // GIVEN
-    var message = Message();
-    var command = Ping(client, logger);
+    var command = Pong(client, logger);
 
     // WHEN
     command.call(message);
 
     // THEN
-    verify(client.emit("ping"));
+    verify(client.emit("pong", any));
   });
 
-  test("should send PONG response", () {
-    var message = Message();
-    var command = Ping(client, logger);
+  test("should set curreny latency on the client", () {
+    var command = Pong(client, logger);
 
     // WHEN
     command.call(message);
 
     // THEN
-    verify(client.send("PONG"));
+    verify(client.currentLatency).called(1);
   });
 }
