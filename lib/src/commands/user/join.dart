@@ -17,7 +17,6 @@ class Join extends Command {
     if (_.isJustinfan(client.username) && client.username == nick) {
       client.lastJoined = channel;
       //this.channels.push(channel);
-      log.i("Joined ${channel}");
       client.emit("join", [channel, nick, true]);
     }
 

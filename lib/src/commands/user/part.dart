@@ -27,7 +27,6 @@ class Part extends Command {
       //var index = this.opts.channels.indexOf(channel);
       //if(index !== -1) { this.opts.channels.splice(index, 1); }
 
-      log.i("Left ${channel}");
       client.emit("_promisePart");
     }
 
