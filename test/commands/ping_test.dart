@@ -1,8 +1,6 @@
 import 'package:logger/src/logger.dart';
-import 'package:eventify/eventify.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
-import 'package:tmi/src/commands/command.dart';
 import 'package:tmi/src/commands/ping.dart';
 import 'package:tmi/src/message.dart';
 import 'package:tmi/tmi.dart';

@@ -9,6 +9,11 @@
 .history
 .svn/
 
+# Coverage
+coverage/
+test/.test_coverage.dart
+coverage_badge.svg
+
 # IntelliJ related
 *.iml
 *.ipr
