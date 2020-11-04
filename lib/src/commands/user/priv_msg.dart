@@ -21,7 +21,7 @@ class PrivMsg extends Command {
 
       if (msg.contains("hosting you for")) {
         // Someone is hosting the channel and the message contains how many viewers..
-        var count = int.tryParse(msg);
+        var count = _.extractNumber(msg);
 
         client.emit("hosted", [channel, name, count, autohost]);
       } else if (msg.contains("hosting you")) {
@@ -31,9 +31,10 @@ class PrivMsg extends Command {
     } else {
       // Message is an action (/me <message>)..
       var actionMessage =
-          RegExp(r"/^\u0001ACTION ([^\u0001]+)\u0001$/").firstMatch(msg);
+          RegExp(r"^\u0001ACTION ([^\u0001]+)\u0001$").firstMatch(msg);
       message.tags["message-type"] = actionMessage != null ? "action" : "chat";
-      msg = actionMessage != null ? actionMessage : msg;
+
+      msg = actionMessage != null ? actionMessage.group(1) : msg;
       // Check for Bits prior to actions message
       if (message.tags.containsKey("bits")) {
         client.emit("cheer", [channel, message.tags, msg]);

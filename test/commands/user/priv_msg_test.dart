@@ -60,4 +60,55 @@ void main() {
       client.emit("cheer", ["#ronni", expectedTags, expectedMessage]),
     );
   });
+
+  test("emits an action for /me actions", () {
+    // GIVEN
+    var expectedTags = {
+      "username": "ronni",
+      "message-type": "action",
+      "badges": "staff/1",
+      "display-name": "ronni"
+    };
+    var expectedMessage = "jumps";
+    var message = Message.parse(
+        "@badges=staff/1;display-name=ronni :ronni!ronni@ronni.tmi.twitch.tv PRIVMSG #ronni :\u0001ACTION ${expectedMessage}\u0001");
+    var command = PrivMsg(client, logger);
+
+    // WHEN
+    command.call(message);
+
+    // THEN
+    verify(
+      client.emit("message", ["#ronni", expectedTags, expectedMessage, false]),
+    );
+    verify(
+      client.emit("action", ["#ronni", expectedTags, expectedMessage, false]),
+    );
+  });
+
+  test("emits hosted with user count", () {
+    // GIVEN
+    var message = Message.parse(
+        ":jtv!jtv@jtv.tmi.twitch.tv PRIVMSG #ronni :otherUser hosting you for 4");
+    var command = PrivMsg(client, logger);
+
+    // WHEN
+    command.call(message);
+
+    // THEN
+    verify(client.emit("hosted", ["#ronni", "otheruser", 4, false]));
+  });
+
+  test("emits hosted without user count", () {
+    // GIVEN
+    var message = Message.parse(
+        ":jtv!jtv@jtv.tmi.twitch.tv PRIVMSG #ronni :otherUser hosting you");
+    var command = PrivMsg(client, logger);
+
+    // WHEN
+    command.call(message);
+
+    // THEN
+    verify(client.emit("hosted", ["#ronni", "otheruser", 0, false]));
+  });
 }

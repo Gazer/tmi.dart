@@ -16,6 +16,15 @@ String get(List<String> list, int index) {
   return list[index];
 }
 
+int extractNumber(String str) {
+  return str
+          .split(" ")
+          .map((n) => int.tryParse(n))
+          .where((element) => element != null)
+          .first ??
+      0;
+}
+
 // Escaping values:
 // http://ircv3.net/specs/core/message-tags-3.2.html#escaping-values
 String unescapeIRC(String msg) {
