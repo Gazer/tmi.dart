@@ -11,6 +11,9 @@ class PrivMsg extends Command {
   void call(Message message) {
     var channel = _.channel(message.params[0]);
     var msg = _.get(message.params, 1);
+    if (msg == null) {
+      return;
+    }
 
     // Add username (lowercase) to the tags..
     message.tags['username'] = message.prefix.split("!")[0];

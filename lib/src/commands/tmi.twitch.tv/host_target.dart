@@ -13,6 +13,9 @@ class HostTarget extends Command {
   void call(Message message) {
     var channel = _.channel(message.params[0]);
     var msg = _.get(message.params, 1);
+    if (msg == null) {
+      return;
+    }
 
     var msgSplit = msg.split(" ");
     var viewers = int.tryParse(msgSplit[1]) ?? 0;

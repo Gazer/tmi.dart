@@ -21,7 +21,7 @@ class Part extends Command {
         client.userstate.remove(channel);
       }
 
-      var index = client.channels.indexOf(channel);
+      // var index = client.channels.indexOf(channel);
       //if(index != -1) { this.channels.splice(index, 1); }
 
       //var index = this.opts.channels.indexOf(channel);

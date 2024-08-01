@@ -1,14 +1,18 @@
+import 'package:logger/logger.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 import 'package:tmi/src/commands/no_op.dart';
 import 'package:tmi/src/message.dart';
+import 'package:mockito/annotations.dart';
+import 'package:tmi/tmi.dart';
 
-import '../mocks.dart';
+import 'no_op_test.mocks.dart';
 
+@GenerateNiceMocks([MockSpec<Client>(), MockSpec<Logger>()])
 void main() {
   var client;
   var logger;
-  var message = Message();
+  var message = Message(raw: "", tags: {}, prefix: "", command: "", params: []);
 
   setUp(() {
     client = MockClient();

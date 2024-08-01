@@ -6,14 +6,14 @@ class Message {
   final List<String> params;
 
   Message({
-    this.raw,
-    this.tags,
-    this.prefix,
-    this.command,
-    this.params,
+    required this.raw,
+    required this.tags,
+    required this.prefix,
+    required this.command,
+    required this.params,
   });
 
-  factory Message.parse(String data) {
+  static Message? parse(String data) {
     // Parse a message.
     //
     // Based on TMI.js version at
@@ -45,7 +45,7 @@ class Message {
         // If there's no equals, we assign the tag a value of true.
         var tag = rawTags[i];
         var pair = tag.split("=");
-        tags[pair[0]] = tag.substring(tag.indexOf("=") + 1) ?? "true";
+        tags[pair[0]] = tag.substring(tag.indexOf("=") + 1);
       }
 
       position = nextspace + 1;

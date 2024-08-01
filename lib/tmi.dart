@@ -2,8 +2,8 @@ library tmidart;
 
 import 'package:logger/logger.dart';
 import 'package:tmi/src/monitor.dart';
-import 'package:websok/io.dart';
 import 'package:eventify/eventify.dart';
+import 'package:web_socket_client/web_socket_client.dart' as ws;
 
 import 'src/commands/command.dart';
 import 'src/commands/ping.dart';
@@ -20,31 +20,30 @@ class Client {
   final bool secure;
   final EventEmitter emitter = new EventEmitter();
 
-  IOWebsok _sok;
-  Monitor _monitor;
+  ws.WebSocket _sok;
+  late Monitor _monitor;
+  late String clientId;
+  String? token;
 
-  String clientId;
-  String token;
-
-  int currentLatency;
+  int currentLatency = 0;
   DateTime latency = DateTime.now();
-  String username;
-  Map<String, dynamic> globaluserstate;
-  Map<String, dynamic> userstate;
-  String lastJoined;
+  String username = "";
+  Map<String, dynamic>? globaluserstate;
+  Map<String, dynamic> userstate = {};
+  String lastJoined = "";
   Map<String, List<String>> moderators = Map();
   String emotes = "";
   Map<String, String> emotesets = {};
-  bool wasCloseCalled;
-  bool reconnect;
-  String reason;
+  bool wasCloseCalled = false;
+  bool reconnect = false;
+  String? reason;
 
-  Map<String, Command> twitchCommands;
-  Map<String, Command> noScopeCommands;
-  Map<String, Command> userCommands;
+  late Map<String, Command> twitchCommands;
+  late Map<String, Command> noScopeCommands;
+  late Map<String, Command> userCommands;
 
-  Client({this.channels, this.secure})
-      : _sok = IOWebsok(host: 'irc-ws.chat.twitch.tv', tls: secure) {
+  Client({required this.channels, required this.secure})
+      : _sok = ws.WebSocket(Uri.parse('ws://irc-ws.chat.twitch.tv')) {
     noScopeCommands = {
       "PING": Ping(this, log),
       "PONG": Pong(this, log),
@@ -83,11 +82,12 @@ class Client {
   }
 
   void connect() {
-    _sok.connect();
-    _sok.listen(
-      onData: _onData,
-    );
-    _onOpen();
+    _sok.messages.listen(_onData);
+    _sok.connection.listen((state) {
+      if (state is ws.Connected) {
+        _onOpen();
+      }
+    });
   }
 
   void close() {
@@ -136,11 +136,11 @@ class Client {
   }
 
   bool _wsReady() {
-    return !((_sok == null) || !_sok.isActive);
+    return _sok.connection.state is ws.Connected;
   }
 
   void _onOpen() {
-    if ((_sok == null) || !_sok.isActive) return;
+    if (!_wsReady()) return;
 
     emit("connecting");
 
@@ -148,15 +148,15 @@ class Client {
     var username = _.justinfan();
     // get token for the user name
     // generate password from token
-    var password = false;
+    // var password = false;
 
     emit("logon");
     _sok.send(
       "CAP REQ :twitch.tv/tags twitch.tv/commands twitch.tv/membership",
     );
-    if (password) {
-      _sok.send("PASS $password");
-    }
+    //if (password) {
+    //  _sok.send("PASS $password");
+    //}
     _sok.send("NICK $username");
   }
 
@@ -164,11 +164,15 @@ class Client {
     var parts = (event as String).split("\r\n");
 
     parts
-        .where((part) => part != null && part.isNotEmpty)
+        .where((part) => part.isNotEmpty)
         .forEach((part) => _handleMessage(Message.parse(part)));
   }
 
-  void _handleMessage(Message message) {
+  void _handleMessage(Message? message) {
+    if (message == null) {
+      return;
+    }
+
     if (emitter.getListenersCount("raw_message") > 0) {
       emit("raw_message", [message]);
     }
@@ -208,7 +212,7 @@ class Client {
     // Messages with no prefix..
     if (message.prefix.isEmpty) {
       if (noScopeCommands.containsKey(message.command)) {
-        noScopeCommands[message.command].call(message);
+        noScopeCommands[message.command]?.call(message);
       } else {
         print("Could not parse message with no prefix:\n${message.raw}");
       }
@@ -226,7 +230,7 @@ class Client {
         default:
           if (twitchCommands.containsKey(message.command)) {
             var command = twitchCommands[message.command];
-            command.call(message);
+            command?.call(message);
           } else {
             log.e(
               "Could not parse message from tmi.twitch.tv:\n${message.raw}",
@@ -241,18 +245,20 @@ class Client {
     } // Anything else..
     else {
       if (userCommands.containsKey(message.command)) {
-        userCommands[message.command].call(message);
+        userCommands[message.command]?.call(message);
       } else {
         log.e("COMMAND ${message.command} not yet implemented");
       }
     }
   }
 
-  Future<bool> sendCommand(delay, String channel, command, Function fn) async {
+  Future<bool> sendCommand(
+      delay, String? channel, command, bool Function() fn) async {
     return _sendCommand(delay, channel, command, fn);
   }
 
-  Future<bool> _sendCommand(delay, String channel, command, Function fn) async {
+  Future<bool> _sendCommand(
+      delay, String? channel, command, bool Function() fn) async {
     // Make sure the socket is opened..
     if (!_wsReady()) {
       // Disconnected from server..
@@ -280,11 +286,11 @@ class Client {
     }
   }
 
-  void emit(String type, [List params]) {
+  void emit(String type, [List? params]) {
     emitter.emit(type, null, params);
   }
 
-  String getToken() {
+  String? getToken() {
     return null;
   }
 }

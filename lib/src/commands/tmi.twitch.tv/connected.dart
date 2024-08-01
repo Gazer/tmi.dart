@@ -20,12 +20,11 @@ class Connected extends Command {
 
     client.sendCommand(null, null, "JOIN $channel", () {
       // no-op
+      return true;
     });
 
-    var hasFulfilled = false;
     client.on("_promiseJoin", (error, joinedChannel) {
       if (channel == _.channel(joinedChannel)) {
-        hasFulfilled = true;
         //emitter.removeListener("_promiseJoin", listener);
         print("JOINED!");
       }

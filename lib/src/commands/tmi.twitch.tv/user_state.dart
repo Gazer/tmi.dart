@@ -19,8 +19,10 @@ class UserState extends Command {
       if (!client.moderators.containsKey(client.lastJoined)) {
         client.moderators[client.lastJoined] = [];
       }
-      if (!client.moderators[client.lastJoined].contains(client.username)) {
-        client.moderators[client.lastJoined].add(client.username);
+
+      var moderators = client.moderators[client.lastJoined];
+      if (moderators != null && !moderators.contains(client.username)) {
+        moderators.add(client.username);
       }
     }
 

@@ -12,6 +12,9 @@ class Notice extends Command {
   void call(Message message) {
     var channel = _.channel(message.params[0]);
     var msg = _.get(message.params, 1);
+    if (msg == null) {
+      return;
+    }
     var msgid = message.tags["msg-id"];
 
     var nullArr = [null];
@@ -84,7 +87,7 @@ class Notice extends Command {
             .split(": ")[1]
             .toLowerCase()
             .split(", ")
-            .where((String n) => n != null && n.isNotEmpty);
+            .where((String n) => n.isNotEmpty);
 
         client.emits([
           "_promiseMods",
@@ -115,7 +118,7 @@ class Notice extends Command {
             .split(": ")[1]
             .toLowerCase()
             .split(", ")
-            .where((String n) => n != null && n.isNotEmpty);
+            .where((String n) => n.isNotEmpty);
 
         client.emits([
           "_promiseVips",
@@ -275,7 +278,7 @@ class Notice extends Command {
       // Host command success..
       case "hosts_remaining":
         client.log.i(basicLog);
-        var remainingHost = int.tryParse(msg[0] ?? "") ?? 0;
+        var remainingHost = int.tryParse(msg[0]) ?? 0;
         client.emits([
           "notice",
           "_promiseHost"

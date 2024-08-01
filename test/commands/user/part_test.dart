@@ -1,15 +1,18 @@
+import 'package:logger/logger.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
-import 'package:tmi/src/commands/user/join.dart';
 import 'package:tmi/src/commands/user/part.dart';
 import 'package:tmi/src/message.dart';
+import 'package:mockito/annotations.dart';
+import 'package:tmi/tmi.dart';
 
-import '../../mocks.dart';
+import 'part_test.mocks.dart';
 
+@GenerateNiceMocks([MockSpec<Client>(), MockSpec<Logger>()])
 void main() {
   var client;
   var logger;
-  var message = Message.parse(":ronni!ronni@ronni.tmi.twitch.tv PART #dallas");
+  var message = Message.parse(":ronni!ronni@ronni.tmi.twitch.tv PART #dallas")!;
 
   setUp(() {
     client = MockClient();
@@ -31,7 +34,7 @@ void main() {
   test("detects if I leave the chat", () {
     // GIVEN
     var message = Message.parse(
-        ":justinfan33!justinfan33@ronni.tmi.twitch.tv PART #dallas");
+        ":justinfan33!justinfan33@ronni.tmi.twitch.tv PART #dallas")!;
     when(client.username).thenReturn("justinfan33");
     when(client.userstate).thenReturn({"dallas": []});
     when(client.channels).thenReturn("dallas");

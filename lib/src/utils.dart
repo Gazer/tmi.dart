@@ -1,16 +1,16 @@
 import 'dart:math';
 
-String channel(String str) {
+String channel(String? str) {
   var channel = (str ?? "").toLowerCase();
   return channel[0] == "#" ? channel : "#" + channel;
 }
 
-String username(String str) {
+String username(String? str) {
   var channel = (str ?? "").toLowerCase();
   return channel[0] == "#" ? channel.substring(1) : channel;
 }
 
-String get(List<String> list, int index) {
+String? get(List<String> list, int index) {
   if (index >= list.length) return null;
 
   return list[index];
@@ -27,7 +27,7 @@ int extractNumber(String str) {
 
 // Escaping values:
 // http://ircv3.net/specs/core/message-tags-3.2.html#escaping-values
-String unescapeIRC(String msg) {
+String? unescapeIRC(String? msg) {
   var unescapeIRCRegex = RegExp(r"\\([sn:r\\])", caseSensitive: false);
   var ircEscapedChars = {'s': ' ', 'n': '', ':': ';', 'r': ''};
 
@@ -35,7 +35,7 @@ String unescapeIRC(String msg) {
 
   return msg.replaceAllMapped(
     unescapeIRCRegex,
-    (match) => ircEscapedChars[match[1]] ?? match[1],
+    (match) => ircEscapedChars[match[1]] ?? match[1] ?? "",
   );
 }
 
@@ -58,7 +58,7 @@ Map<String, dynamic> _parseComplexTag(
   String tagKey, [
   String splA = ",",
   String splB = "/",
-  String splC = null,
+  String? splC = null,
 ]) {
   var raw = tags[tagKey];
 
@@ -104,5 +104,5 @@ bool isJustinfan(String username) {
 }
 
 RegExp tokenRegEx = new RegExp(r'oauth:');
-String token(String str) =>
+String token(String? str) =>
     str != null ? str.toLowerCase().replaceFirst(tokenRegEx, "") : "";

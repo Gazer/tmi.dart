@@ -9,7 +9,7 @@ import 'package:http/http.dart' as http;
 import 'package:tmi/src/utils.dart' as _;
 
 class GlobalUserState extends Command {
-  Timer _emotesUpdater;
+  Timer? _emotesUpdater;
 
   GlobalUserState(Client client, Logger log) : super(client, log);
 
@@ -26,16 +26,15 @@ class GlobalUserState extends Command {
   void _updateEmoteset(sets) async {
     client.emotes = sets;
 
-    if (_emotesUpdater != null) {
-      _emotesUpdater.cancel();
-    }
+    _emotesUpdater?.cancel();
 
     _emotesUpdater =
         Timer.periodic(Duration(milliseconds: 60000), (timer) async {
       var token = client.getToken();
 
-      var url =
-          "https://api.twitch.tv/kraken/chat/emoticon_images?emotesets=${sets}";
+      var url = Uri.parse(
+        "https://api.twitch.tv/kraken/chat/emoticon_images?emotesets=${sets}",
+      );
       var headers = {
         "Authorization": "OAuth ${_.token(token)}",
         "Client-ID": client.clientId,

@@ -1,15 +1,19 @@
+import 'package:logger/logger.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 import 'package:tmi/src/commands/user/names.dart';
 import 'package:tmi/src/message.dart';
+import 'package:mockito/annotations.dart';
+import 'package:tmi/tmi.dart';
 
-import '../../mocks.dart';
+import 'names_test.mocks.dart';
 
+@GenerateNiceMocks([MockSpec<Client>(), MockSpec<Logger>()])
 void main() {
   var client;
   var logger;
   var message = Message.parse(
-      ":justinfan64481.tmi.twitch.tv 353 justinfan64481 = #dallas :justinfan64481");
+      ":justinfan64481.tmi.twitch.tv 353 justinfan64481 = #dallas :justinfan64481")!;
 
   setUp(() {
     client = MockClient();

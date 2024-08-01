@@ -1,10 +1,14 @@
+import 'package:logger/logger.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 import 'package:tmi/src/commands/ping.dart';
 import 'package:tmi/src/message.dart';
+import 'package:mockito/annotations.dart';
+import 'package:tmi/tmi.dart';
 
-import '../mocks.dart';
+import 'ping_test.mocks.dart';
 
+@GenerateNiceMocks([MockSpec<Client>(), MockSpec<Logger>()])
 void main() {
   var client;
   var logger;
@@ -16,7 +20,8 @@ void main() {
 
   test("ensure emit ping event", () {
     // GIVEN
-    var message = Message();
+    var message =
+        Message(raw: "", tags: {}, prefix: "", command: "", params: []);
     var command = Ping(client, logger);
 
     // WHEN
@@ -27,7 +32,8 @@ void main() {
   });
 
   test("should send PONG response", () {
-    var message = Message();
+    var message =
+        Message(raw: "", tags: {}, prefix: "", command: "", params: []);
     var command = Ping(client, logger);
 
     // WHEN
