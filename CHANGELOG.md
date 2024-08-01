@@ -1,3 +1,7 @@
+# 0.0.5
+
+* Dart 3 migration
+
 # 0.0.4
 
 * Pick random anon username
