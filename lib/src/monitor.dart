@@ -29,6 +29,10 @@ class Monitor {
       await Future.delayed(Duration(milliseconds: 60000));
     }
   }
+
+  void stop() {
+    monitoring = false;
+  }
 }
 
 // 				// Set an internal ping timeout check interval..

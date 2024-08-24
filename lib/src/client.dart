@@ -4,7 +4,12 @@ import 'client_base.dart';
 import 'utils.dart' as _;
 
 class Client extends ClientBase {
-  Client({required super.channels, required super.secure, super.mock});
+  Client({
+    required super.channels,
+    required super.secure,
+    super.credentials,
+    super.mock,
+  });
 
   Future<String> action(
     String channel,

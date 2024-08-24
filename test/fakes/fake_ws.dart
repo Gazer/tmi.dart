@@ -9,6 +9,7 @@ class FakeWs implements WebSocket {
   var messageController = StreamController<dynamic>.broadcast();
 
   Map<String, String> _mockResponses = {};
+  bool? isPasswordGood;
 
   FakeWs() {
     conn.mock.sink.add(Connected());
@@ -16,7 +17,7 @@ class FakeWs implements WebSocket {
 
   @override
   void close([int? code, String? reason]) {
-    // TODO: implement close
+    conn.mock.sink.add(Disconnected());
   }
 
   @override
@@ -36,9 +37,20 @@ class FakeWs implements WebSocket {
     }
 
     if (message is String && message.startsWith("NICK")) {
-      var username = message.split(" ")[1];
-      messageController.sink
-          .add(":tmi.twitch.tv 001 $username :Welcome, GLHF!");
+      if (isPasswordGood == true) {
+        var username = message.split(" ")[1];
+        messageController.sink
+            .add(":tmi.twitch.tv 001 $username :Welcome, GLHF!");
+      } else {
+        messageController.sink
+            .add(":tmi.twitch.tv NOTICE * :Login authentication failed");
+      }
+    }
+    if (message is String && message.startsWith("PASS")) {
+      var password = message.split(" ")[1];
+      isPasswordGood =
+          password == "oauth:goodpassword" || password == "SCHMOOPIIE";
+      print("are good?: $isPasswordGood / $password");
     }
   }
 

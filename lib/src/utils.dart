@@ -127,3 +127,9 @@ String? formTags(Map<String, String> tags) {
       .map((entry) => "${escapeIRC(entry.key)}=${escapeIRC(entry.value)}");
   return result.length == 0 ? null : result.join(";");
 }
+
+// Return a valid token
+String password(String? str) {
+  final t = token(str);
+  return t.isNotEmpty ? "oauth:${t}" : '';
+}

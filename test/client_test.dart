@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:test/test.dart';
 import 'package:tmi/src/client.dart';
+import 'package:tmi/src/credentials.dart';
 
 import 'fakes/fake_ws.dart';
 
@@ -34,5 +37,27 @@ void main() {
     } catch (e) {
       assert(e == "Cannot send anonymous messages.");
     }
+  });
+
+  test("login with wrong password disconnect the server", () async {
+    FakeWs ws1 = FakeWs();
+    client = Client(
+      channels: "Dummy",
+      secure: true,
+      credentials: Credentials(
+        username: "User",
+        password: "BadPassword",
+      ),
+      mock: ws1,
+    );
+
+    Completer<String> reasonCompleter = Completer();
+    client.on("disconnected", (reason) {
+      reasonCompleter.complete(reason);
+    });
+    client.connect();
+
+    var result = await reasonCompleter.future;
+    assert(result == "Login authentication failed");
   });
 }

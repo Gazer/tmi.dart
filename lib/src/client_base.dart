@@ -4,6 +4,7 @@ import 'package:logger/logger.dart';
 import 'package:tmi/src/monitor.dart';
 import 'package:web_socket_client/web_socket_client.dart' as ws;
 
+import 'credentials.dart';
 import 'client_emitter.dart';
 import 'commands/command.dart';
 import 'commands/ping.dart';
@@ -18,6 +19,7 @@ class ClientBase extends ClientEmitter {
 
   final String channels;
   final bool secure;
+  final Credentials? credentials;
 
   ws.WebSocket _sok;
   late Monitor _monitor;
@@ -41,8 +43,12 @@ class ClientBase extends ClientEmitter {
   late Map<String, Command> noScopeCommands;
   late Map<String, Command> userCommands;
 
-  ClientBase({required this.channels, required this.secure, ws.WebSocket? mock})
-      : _sok = mock ?? ws.WebSocket(Uri.parse('ws://irc-ws.chat.twitch.tv')) {
+  ClientBase({
+    required this.channels,
+    required this.secure,
+    this.credentials,
+    ws.WebSocket? mock,
+  }) : _sok = mock ?? ws.WebSocket(Uri.parse('ws://irc-ws.chat.twitch.tv')) {
     noScopeCommands = {
       "PING": Ping(this, log),
       "PONG": Pong(this, log),
@@ -86,6 +92,9 @@ class ClientBase extends ClientEmitter {
       if (state is ws.Connected) {
         _onOpen();
       }
+      if (state is ws.Disconnected) {
+        _onClose();
+      }
     });
   }
 
@@ -101,25 +110,76 @@ class ClientBase extends ClientEmitter {
     return _sok.connection.state is ws.Connected;
   }
 
+  void _onClose() {
+    this.moderators = {};
+    this.userstate = {};
+    this.globaluserstate = {};
+    _monitor.stop();
+
+    if (this.wasCloseCalled) {
+      wasCloseCalled = false;
+      reason = 'Connection closed.';
+      log.i(this.reason);
+      emits([
+        '_promiseConnect',
+        '_promiseDisconnect',
+        'disconnected'
+      ], [
+        [this.reason],
+        [null],
+        [this.reason]
+      ]);
+    } else {
+      this.emits([
+        '_promiseConnect',
+        'disconnected'
+      ], [
+        [this.reason]
+      ]);
+
+      // Reconnect to server
+      // if(!this.wasCloseCalled && this.reconnect && this.reconnections === this.maxReconnectAttempts) {
+      // this.emit('maxreconnect');
+      // this.log.error('Maximum reconnection attempts reached.');
+      // }
+      // if(!this.wasCloseCalled && this.reconnect && !this.reconnecting && this.reconnections <= this.maxReconnectAttempts - 1) {
+      // this.reconnecting = true;
+      // this.reconnections++;
+      // this.log.error(`Could not connect to server. Reconnecting in ${Math.round(this.reconnectTimer / 1000)} seconds..`);
+      // this.emit('reconnect');
+      // setTimeout(() => {
+      // this.reconnecting = false;
+      // this.connect().catch(err => this.log.error(err));
+      // }, this.reconnectTimer);
+      //}
+    }
+  }
+
   void _onOpen() {
     if (!_isReady()) return;
 
     emit("connecting");
 
     // check if we have username
-    var username = _.justinfan();
-    // get token for the user name
-    // generate password from token
-    // var password = false;
+    username = _.username(credentials?.username ?? _.justinfan());
+    final password = _.password(credentials?.password);
+
+    log.i('Sending authentication to server..');
 
     emit("logon");
     _sok.send(
       "CAP REQ :twitch.tv/tags twitch.tv/commands twitch.tv/membership",
     );
-    //if (password) {
-    //  _sok.send("PASS $password");
-    //}
+    if (password.isNotEmpty) {
+      _sok.send("PASS ${password}");
+    } else if (_.isJustinfan(this.username)) {
+      _sok.send('PASS SCHMOOPIIE');
+    }
     _sok.send("NICK $username");
+  }
+
+  String? getToken() {
+    return credentials?.password;
   }
 
   void _onData(dynamic event) {
@@ -246,10 +306,6 @@ class ClientBase extends ClientEmitter {
       _sok.send(command);
     }
     return fn();
-  }
-
-  String? getToken() {
-    return null;
   }
 
   // Send a message to channel
