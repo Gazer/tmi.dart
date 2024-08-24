@@ -39,6 +39,16 @@ String? unescapeIRC(String? msg) {
   );
 }
 
+String escapeIRC(String msg) {
+  var escapeIRCRegex = RegExp(r"([ \n;\r\\])", caseSensitive: false);
+  const ircUnescapedChars = {' ': 's', '\n': 'n', ';': ':', '\r': 'r'};
+
+  return msg.replaceAllMapped(
+    escapeIRCRegex,
+    (match) => ircUnescapedChars[match[1]] ?? match[1] ?? "",
+  );
+}
+
 Map<String, dynamic> emotes(Map<String, dynamic> tags) {
   return _parseComplexTag(tags, "emotes", "/", ":", ",");
 }
@@ -110,4 +120,10 @@ String token(String? str) =>
 var actionMessageRegex = RegExp(r'\u0001ACTION (.*?)\u0001');
 String? actionMessage(String message) {
   return actionMessageRegex.firstMatch(message)?.group(1);
+}
+
+String? formTags(Map<String, String> tags) {
+  var result = tags.entries
+      .map((entry) => "${escapeIRC(entry.key)}=${escapeIRC(entry.value)}");
+  return result.length == 0 ? null : result.join(";");
 }

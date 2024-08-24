@@ -6,7 +6,11 @@ import 'utils.dart' as _;
 class Client extends ClientBase {
   Client({required super.channels, required super.secure, super.mock});
 
-  Future<String> action(channel, message, tags) async {
+  Future<String> action(
+    String channel,
+    String message,
+    Map<String, String> tags,
+  ) async {
     message = "\u0001ACTION ${message}\u0001";
     return sendMessage<String>(channel, message, tags, () {
       // The message is assumed to be sent and recieved by Twitch. The "client-nonce" tag can be used to
@@ -15,10 +19,12 @@ class Client extends ClientBase {
     });
   }
 
-  // // Announce a message on a channel
-  // announce(channel, message) {
-  // 	return this._sendMessage({ channel, message: `/announce ${message}` }, (res, _rej) => res([ _.channel(channel), message ]));
-  // }
+  // Announce a message on a channel
+  Future<List<String>> announce(channel, message) async {
+    return sendMessage<List<String>>(channel, "/announce ${message}", {}, () {
+      return [_.channel(channel), message];
+    });
+  }
 
   /// Ban username on channel
   Future<List<String>> ban(

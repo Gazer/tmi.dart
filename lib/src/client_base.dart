@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:logger/logger.dart';
 import 'package:tmi/src/monitor.dart';
-import 'package:eventify/eventify.dart';
 import 'package:web_socket_client/web_socket_client.dart' as ws;
 
 import 'client_emitter.dart';
@@ -96,12 +95,6 @@ class ClientBase extends ClientEmitter {
 
   void startMonitor() {
     _monitor.loop();
-  }
-
-  void send(String command) {
-    if (_isReady()) {
-      _sok.send(command);
-    }
   }
 
   bool _isReady() {
@@ -263,7 +256,7 @@ class ClientBase extends ClientEmitter {
   Future<T> sendMessage<T>(
     String channel,
     String message,
-    tags,
+    Map<String, String> tags,
     T Function() fn,
   ) async {
     // Promise a result
@@ -274,7 +267,7 @@ class ClientBase extends ClientEmitter {
       throw 'Cannot send anonymous messages.';
     }
     final chan = _.channel(channel);
-    if (!this.userstate[chan]) {
+    if (!this.userstate.containsKey(chan)) {
       this.userstate[chan] = {};
     }
 
@@ -294,8 +287,8 @@ class ClientBase extends ClientEmitter {
       //, 350);
     }
 
-    const formedTags = null; // parser.formTags(tags);
-    send("${formedTags ? formedTags : ''}PRIVMSG ${chan} :${message}");
+    String formedTags = _.formTags(tags) ?? "";
+    send("${formedTags}PRIVMSG ${chan} :${message}");
 
     // Merge userstate with parsed emotes
     // TODO
@@ -305,13 +298,11 @@ class ClientBase extends ClientEmitter {
     // { emotes: null }
     // );
 
-    const messagesLogLevel = 'info';
-
     // Message is an action (/me <message>)
     final actionMessage = _.actionMessage(message);
     if (actionMessage != null) {
       userstate['message-type'] = 'action';
-      //this.log[messagesLogLevel](`[${chan}] *<${this.getUsername()}>: ${actionMessage[1]}`);
+      log.d("[${chan}] *[$username]*: ${actionMessage[1]}");
       this.emits([
         'action',
         'message'
@@ -321,7 +312,7 @@ class ClientBase extends ClientEmitter {
     } else {
       // Message is a regular chat message
       userstate['message-type'] = 'chat';
-      // this.log[messagesLogLevel](`[${chan}] <${this.getUsername()}>: ${message}`);
+      log.d("[${chan}] [$username]: ${message}");
       this.emits([
         'chat',
         'message'
@@ -330,5 +321,12 @@ class ClientBase extends ClientEmitter {
       ]);
     }
     return fn();
+  }
+
+  /// This should not be called directly by tmi users
+  void send(String command) {
+    if (_isReady()) {
+      _sok.send(command);
+    }
   }
 }

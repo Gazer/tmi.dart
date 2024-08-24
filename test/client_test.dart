@@ -26,4 +26,13 @@ void main() {
     assert(result[1] == "nn");
     assert(result[2] == "spam");
   });
+
+  test("anon announce should throw error", () async {
+    try {
+      await client.announce("nn", "5 minutes to next event");
+      fail("exception not thrown");
+    } catch (e) {
+      assert(e == "Cannot send anonymous messages.");
+    }
+  });
 }
