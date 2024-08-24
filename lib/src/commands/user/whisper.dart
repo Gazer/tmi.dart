@@ -1,11 +1,9 @@
-import 'package:logger/src/logger.dart';
 import 'package:tmi/src/commands/command.dart';
 import 'package:tmi/src/message.dart';
-import 'package:tmi/tmi.dart';
 import 'package:tmi/src/utils.dart' as _;
 
 class Whisper extends Command {
-  Whisper(Client client, Logger log) : super(client, log);
+  Whisper(super.client, super.log);
 
   @override
   void call(Message message) {

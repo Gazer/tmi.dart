@@ -1,13 +1,11 @@
-import 'package:logger/logger.dart';
 import 'package:tmi/src/message.dart';
-import 'package:tmi/tmi.dart';
 import 'package:tmi/src/utils.dart' as _;
 
 import '../command.dart';
 
 // Handle subanniversary / resub..
 class UserNotice extends Command {
-  UserNotice(Client client, Logger log) : super(client, log);
+  UserNotice(super.client, super.log);
 
   @override
   void call(Message message) {

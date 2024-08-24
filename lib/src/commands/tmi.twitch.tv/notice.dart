@@ -1,12 +1,10 @@
-import 'package:logger/src/logger.dart';
 import 'package:tmi/src/message.dart';
-import 'package:tmi/tmi.dart';
 import 'package:tmi/src/utils.dart' as _;
 
 import '../command.dart';
 
 class Notice extends Command {
-  Notice(Client client, Logger log) : super(client, log);
+  Notice(super.client, super.log);
 
   @override
   void call(Message message) {

@@ -1,13 +1,11 @@
-import 'package:logger/logger.dart';
 import 'package:tmi/src/message.dart';
-import 'package:tmi/tmi.dart';
 import 'package:tmi/src/utils.dart' as _;
 
 import '../command.dart';
 // Channel is now hosting another channel or exited host mode..
 
 class HostTarget extends Command {
-  HostTarget(Client client, Logger log) : super(client, log);
+  HostTarget(super.client, super.log);
 
   @override
   void call(Message message) {

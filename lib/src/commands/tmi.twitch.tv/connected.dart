@@ -1,11 +1,9 @@
-import 'package:logger/logger.dart';
 import 'package:tmi/src/commands/command.dart';
 import 'package:tmi/src/message.dart';
-import 'package:tmi/tmi.dart';
 import 'package:tmi/src/utils.dart' as _;
 
 class Connected extends Command {
-  Connected(Client client, Logger log) : super(client, log);
+  Connected(super.client, super.log);
 
   @override
   void call(Message message) {
@@ -18,7 +16,7 @@ class Connected extends Command {
   Future _join(String channel) async {
     channel = _.channel(channel);
 
-    client.sendCommand(null, null, "JOIN $channel", () {
+    client.sendCommand<bool>(null, "JOIN $channel", () {
       // no-op
       return true;
     });
@@ -26,7 +24,6 @@ class Connected extends Command {
     client.on("_promiseJoin", (error, joinedChannel) {
       if (channel == _.channel(joinedChannel)) {
         //emitter.removeListener("_promiseJoin", listener);
-        print("JOINED!");
       }
     });
 

@@ -1,8 +1,8 @@
-// Ping/Pong monitor
-import 'package:tmi/tmi.dart';
+import 'package:tmi/src/client_base.dart';
 
+/// Ping/Pong monitor
 class Monitor {
-  final Client client;
+  final ClientBase client;
 
   bool pingSent = false;
   bool monitoring = false;

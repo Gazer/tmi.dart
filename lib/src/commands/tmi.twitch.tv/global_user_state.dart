@@ -1,9 +1,7 @@
 import 'dart:async';
 
-import 'package:logger/src/logger.dart';
 import 'package:tmi/src/commands/command.dart';
 import 'package:tmi/src/message.dart';
-import 'package:tmi/tmi.dart';
 import 'dart:convert' as convert;
 import 'package:http/http.dart' as http;
 import 'package:tmi/src/utils.dart' as _;
@@ -11,7 +9,7 @@ import 'package:tmi/src/utils.dart' as _;
 class GlobalUserState extends Command {
   Timer? _emotesUpdater;
 
-  GlobalUserState(Client client, Logger log) : super(client, log);
+  GlobalUserState(super.client, super.log);
 
   @override
   void call(Message message) {

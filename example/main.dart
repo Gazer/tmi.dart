@@ -18,9 +18,23 @@ void main() {
   client.on("raided", (channel, username, viewers, userstate) {
     print("${channel}> === RAID === ${viewers} from ${username}");
   });
-  client.on("resub",
-      (channel, username, streakMonths, msg, userstate, methods) {
-    print("${channel}> CAPO $username por sus $streakMonths!: $msg");
+  client.on("resub", (
+    channel,
+    username,
+    streakMonths,
+    msg,
+    userstate,
+    methods,
+  ) {
+    var streakMonths = userstate['msg-param-streak-months'];
+    var cumulativeMonths = userstate['msg-param-cumulative-months'];
+    var sharedStreak = userstate['msg-param-should-share-streak'];
+    if (sharedStreak) {
+      print("${channel}> CAPO $username por sus $streakMonths!: $msg");
+    } else {
+      print(
+          "${channel}> CAPO $username por resuscribirse ya ${cumulativeMonths} meses: $msg");
+    }
   });
   client.on("subscription", (channel, username, methods, msg, userstate) {
     print("${channel}>>>> NEW SUB: $username");

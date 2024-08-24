@@ -1,6 +1,4 @@
-import 'package:logger/src/logger.dart';
 import 'package:tmi/src/message.dart';
-import 'package:tmi/tmi.dart';
 import 'package:tmi/src/utils.dart' as _;
 
 import '../command.dart';
@@ -8,7 +6,7 @@ import '../command.dart';
 // Someone has been timed out or chat has been cleared by a moderator..
 
 class ClearChat extends Command {
-  ClearChat(Client client, Logger log) : super(client, log);
+  ClearChat(super.client, super.log);
 
   @override
   void call(Message message) {

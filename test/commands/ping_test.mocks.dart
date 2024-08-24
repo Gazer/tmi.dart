@@ -3,14 +3,14 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'dart:async' as _i7;
+import 'dart:async' as _i4;
 
 import 'package:eventify/eventify.dart' as _i3;
 import 'package:logger/logger.dart' as _i2;
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:mockito/src/dummies.dart' as _i5;
-import 'package:tmi/src/commands/command.dart' as _i6;
-import 'package:tmi/tmi.dart' as _i4;
+import 'package:mockito/src/dummies.dart' as _i6;
+import 'package:tmi/src/client.dart' as _i5;
+import 'package:tmi/src/commands/command.dart' as _i7;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -65,10 +65,20 @@ class _FakeListener_3 extends _i1.SmartFake implements _i3.Listener {
         );
 }
 
+class _FakeFuture_4<T1> extends _i1.SmartFake implements _i4.Future<T1> {
+  _FakeFuture_4(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
 /// A class which mocks [Client].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockClient extends _i1.Mock implements _i4.Client {
+class MockClient extends _i1.Mock implements _i5.Client {
   @override
   _i2.Logger get log => (super.noSuchMethod(
         Invocation.getter(#log),
@@ -94,11 +104,11 @@ class MockClient extends _i1.Mock implements _i4.Client {
   @override
   String get channels => (super.noSuchMethod(
         Invocation.getter(#channels),
-        returnValue: _i5.dummyValue<String>(
+        returnValue: _i6.dummyValue<String>(
           this,
           Invocation.getter(#channels),
         ),
-        returnValueForMissingStub: _i5.dummyValue<String>(
+        returnValueForMissingStub: _i6.dummyValue<String>(
           this,
           Invocation.getter(#channels),
         ),
@@ -127,11 +137,11 @@ class MockClient extends _i1.Mock implements _i4.Client {
   @override
   String get clientId => (super.noSuchMethod(
         Invocation.getter(#clientId),
-        returnValue: _i5.dummyValue<String>(
+        returnValue: _i6.dummyValue<String>(
           this,
           Invocation.getter(#clientId),
         ),
-        returnValueForMissingStub: _i5.dummyValue<String>(
+        returnValueForMissingStub: _i6.dummyValue<String>(
           this,
           Invocation.getter(#clientId),
         ),
@@ -196,11 +206,11 @@ class MockClient extends _i1.Mock implements _i4.Client {
   @override
   String get username => (super.noSuchMethod(
         Invocation.getter(#username),
-        returnValue: _i5.dummyValue<String>(
+        returnValue: _i6.dummyValue<String>(
           this,
           Invocation.getter(#username),
         ),
-        returnValueForMissingStub: _i5.dummyValue<String>(
+        returnValueForMissingStub: _i6.dummyValue<String>(
           this,
           Invocation.getter(#username),
         ),
@@ -244,11 +254,11 @@ class MockClient extends _i1.Mock implements _i4.Client {
   @override
   String get lastJoined => (super.noSuchMethod(
         Invocation.getter(#lastJoined),
-        returnValue: _i5.dummyValue<String>(
+        returnValue: _i6.dummyValue<String>(
           this,
           Invocation.getter(#lastJoined),
         ),
-        returnValueForMissingStub: _i5.dummyValue<String>(
+        returnValueForMissingStub: _i6.dummyValue<String>(
           this,
           Invocation.getter(#lastJoined),
         ),
@@ -282,11 +292,11 @@ class MockClient extends _i1.Mock implements _i4.Client {
   @override
   String get emotes => (super.noSuchMethod(
         Invocation.getter(#emotes),
-        returnValue: _i5.dummyValue<String>(
+        returnValue: _i6.dummyValue<String>(
           this,
           Invocation.getter(#emotes),
         ),
-        returnValueForMissingStub: _i5.dummyValue<String>(
+        returnValueForMissingStub: _i6.dummyValue<String>(
           this,
           Invocation.getter(#emotes),
         ),
@@ -359,14 +369,14 @@ class MockClient extends _i1.Mock implements _i4.Client {
       );
 
   @override
-  Map<String, _i6.Command> get twitchCommands => (super.noSuchMethod(
+  Map<String, _i7.Command> get twitchCommands => (super.noSuchMethod(
         Invocation.getter(#twitchCommands),
-        returnValue: <String, _i6.Command>{},
-        returnValueForMissingStub: <String, _i6.Command>{},
-      ) as Map<String, _i6.Command>);
+        returnValue: <String, _i7.Command>{},
+        returnValueForMissingStub: <String, _i7.Command>{},
+      ) as Map<String, _i7.Command>);
 
   @override
-  set twitchCommands(Map<String, _i6.Command>? _twitchCommands) =>
+  set twitchCommands(Map<String, _i7.Command>? _twitchCommands) =>
       super.noSuchMethod(
         Invocation.setter(
           #twitchCommands,
@@ -376,14 +386,14 @@ class MockClient extends _i1.Mock implements _i4.Client {
       );
 
   @override
-  Map<String, _i6.Command> get noScopeCommands => (super.noSuchMethod(
+  Map<String, _i7.Command> get noScopeCommands => (super.noSuchMethod(
         Invocation.getter(#noScopeCommands),
-        returnValue: <String, _i6.Command>{},
-        returnValueForMissingStub: <String, _i6.Command>{},
-      ) as Map<String, _i6.Command>);
+        returnValue: <String, _i7.Command>{},
+        returnValueForMissingStub: <String, _i7.Command>{},
+      ) as Map<String, _i7.Command>);
 
   @override
-  set noScopeCommands(Map<String, _i6.Command>? _noScopeCommands) =>
+  set noScopeCommands(Map<String, _i7.Command>? _noScopeCommands) =>
       super.noSuchMethod(
         Invocation.setter(
           #noScopeCommands,
@@ -393,14 +403,14 @@ class MockClient extends _i1.Mock implements _i4.Client {
       );
 
   @override
-  Map<String, _i6.Command> get userCommands => (super.noSuchMethod(
+  Map<String, _i7.Command> get userCommands => (super.noSuchMethod(
         Invocation.getter(#userCommands),
-        returnValue: <String, _i6.Command>{},
-        returnValueForMissingStub: <String, _i6.Command>{},
-      ) as Map<String, _i6.Command>);
+        returnValue: <String, _i7.Command>{},
+        returnValueForMissingStub: <String, _i7.Command>{},
+      ) as Map<String, _i7.Command>);
 
   @override
-  set userCommands(Map<String, _i6.Command>? _userCommands) =>
+  set userCommands(Map<String, _i7.Command>? _userCommands) =>
       super.noSuchMethod(
         Invocation.setter(
           #userCommands,
@@ -408,6 +418,65 @@ class MockClient extends _i1.Mock implements _i4.Client {
         ),
         returnValueForMissingStub: null,
       );
+
+  @override
+  _i4.Future<String> action(
+    dynamic channel,
+    dynamic message,
+    dynamic tags,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #action,
+          [
+            channel,
+            message,
+            tags,
+          ],
+        ),
+        returnValue: _i4.Future<String>.value(_i6.dummyValue<String>(
+          this,
+          Invocation.method(
+            #action,
+            [
+              channel,
+              message,
+              tags,
+            ],
+          ),
+        )),
+        returnValueForMissingStub:
+            _i4.Future<String>.value(_i6.dummyValue<String>(
+          this,
+          Invocation.method(
+            #action,
+            [
+              channel,
+              message,
+              tags,
+            ],
+          ),
+        )),
+      ) as _i4.Future<String>);
+
+  @override
+  _i4.Future<List<String>> ban(
+    String? channel,
+    String? username,
+    String? reason,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #ban,
+          [
+            channel,
+            username,
+            reason,
+          ],
+        ),
+        returnValue: _i4.Future<List<String>>.value(<String>[]),
+        returnValueForMissingStub: _i4.Future<List<String>>.value(<String>[]),
+      ) as _i4.Future<List<String>>);
 
   @override
   void connect() => super.noSuchMethod(
@@ -435,6 +504,41 @@ class MockClient extends _i1.Mock implements _i4.Client {
         ),
         returnValueForMissingStub: null,
       );
+
+  @override
+  _i3.Listener once(
+    String? event,
+    Function? f,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #once,
+          [
+            event,
+            f,
+          ],
+        ),
+        returnValue: _FakeListener_3(
+          this,
+          Invocation.method(
+            #once,
+            [
+              event,
+              f,
+            ],
+          ),
+        ),
+        returnValueForMissingStub: _FakeListener_3(
+          this,
+          Invocation.method(
+            #once,
+            [
+              event,
+              f,
+            ],
+          ),
+        ),
+      ) as _i3.Listener);
 
   @override
   _i3.Listener on(
@@ -481,25 +585,71 @@ class MockClient extends _i1.Mock implements _i4.Client {
       );
 
   @override
-  _i7.Future<bool> sendCommand(
-    dynamic delay,
+  _i4.Future<T> sendCommand<T>(
     String? channel,
     dynamic command,
-    Function? fn,
+    _i4.FutureOr<T> Function()? fn,
   ) =>
       (super.noSuchMethod(
         Invocation.method(
           #sendCommand,
           [
-            delay,
             channel,
             command,
             fn,
           ],
         ),
-        returnValue: _i7.Future<bool>.value(false),
-        returnValueForMissingStub: _i7.Future<bool>.value(false),
-      ) as _i7.Future<bool>);
+        returnValue: _i6.ifNotNull(
+              _i6.dummyValueOrNull<T>(
+                this,
+                Invocation.method(
+                  #sendCommand,
+                  [
+                    channel,
+                    command,
+                    fn,
+                  ],
+                ),
+              ),
+              (T v) => _i4.Future<T>.value(v),
+            ) ??
+            _FakeFuture_4<T>(
+              this,
+              Invocation.method(
+                #sendCommand,
+                [
+                  channel,
+                  command,
+                  fn,
+                ],
+              ),
+            ),
+        returnValueForMissingStub: _i6.ifNotNull(
+              _i6.dummyValueOrNull<T>(
+                this,
+                Invocation.method(
+                  #sendCommand,
+                  [
+                    channel,
+                    command,
+                    fn,
+                  ],
+                ),
+              ),
+              (T v) => _i4.Future<T>.value(v),
+            ) ??
+            _FakeFuture_4<T>(
+              this,
+              Invocation.method(
+                #sendCommand,
+                [
+                  channel,
+                  command,
+                  fn,
+                ],
+              ),
+            ),
+      ) as _i4.Future<T>);
 
   @override
   void emits(
@@ -532,6 +682,79 @@ class MockClient extends _i1.Mock implements _i4.Client {
         ),
         returnValueForMissingStub: null,
       );
+
+  @override
+  _i4.Future<T> sendMessage<T>(
+    String? channel,
+    String? message,
+    dynamic tags,
+    T Function()? fn,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #sendMessage,
+          [
+            channel,
+            message,
+            tags,
+            fn,
+          ],
+        ),
+        returnValue: _i6.ifNotNull(
+              _i6.dummyValueOrNull<T>(
+                this,
+                Invocation.method(
+                  #sendMessage,
+                  [
+                    channel,
+                    message,
+                    tags,
+                    fn,
+                  ],
+                ),
+              ),
+              (T v) => _i4.Future<T>.value(v),
+            ) ??
+            _FakeFuture_4<T>(
+              this,
+              Invocation.method(
+                #sendMessage,
+                [
+                  channel,
+                  message,
+                  tags,
+                  fn,
+                ],
+              ),
+            ),
+        returnValueForMissingStub: _i6.ifNotNull(
+              _i6.dummyValueOrNull<T>(
+                this,
+                Invocation.method(
+                  #sendMessage,
+                  [
+                    channel,
+                    message,
+                    tags,
+                    fn,
+                  ],
+                ),
+              ),
+              (T v) => _i4.Future<T>.value(v),
+            ) ??
+            _FakeFuture_4<T>(
+              this,
+              Invocation.method(
+                #sendMessage,
+                [
+                  channel,
+                  message,
+                  tags,
+                  fn,
+                ],
+              ),
+            ),
+      ) as _i4.Future<T>);
 }
 
 /// A class which mocks [Logger].
@@ -539,11 +762,11 @@ class MockClient extends _i1.Mock implements _i4.Client {
 /// See the documentation for Mockito's code generation for more information.
 class MockLogger extends _i1.Mock implements _i2.Logger {
   @override
-  _i7.Future<void> get init => (super.noSuchMethod(
+  _i4.Future<void> get init => (super.noSuchMethod(
         Invocation.getter(#init),
-        returnValue: _i7.Future<void>.value(),
-        returnValueForMissingStub: _i7.Future<void>.value(),
-      ) as _i7.Future<void>);
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
 
   @override
   void v(
@@ -740,12 +963,12 @@ class MockLogger extends _i1.Mock implements _i2.Logger {
       ) as bool);
 
   @override
-  _i7.Future<void> close() => (super.noSuchMethod(
+  _i4.Future<void> close() => (super.noSuchMethod(
         Invocation.method(
           #close,
           [],
         ),
-        returnValue: _i7.Future<void>.value(),
-        returnValueForMissingStub: _i7.Future<void>.value(),
-      ) as _i7.Future<void>);
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
 }

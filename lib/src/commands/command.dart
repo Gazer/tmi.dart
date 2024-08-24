@@ -1,4 +1,5 @@
 import 'package:logger/logger.dart';
+import 'package:tmi/src/client_base.dart';
 import 'package:tmi/src/message.dart';
 import 'package:tmi/tmi.dart';
 
@@ -20,7 +21,7 @@ export 'user/priv_msg.dart';
 export 'user/names.dart';
 
 abstract class Command {
-  final Client client;
+  final ClientBase client;
   final Logger log;
 
   Command(this.client, this.log);

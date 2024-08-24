@@ -106,3 +106,8 @@ bool isJustinfan(String username) {
 RegExp tokenRegEx = new RegExp(r'oauth:');
 String token(String? str) =>
     str != null ? str.toLowerCase().replaceFirst(tokenRegEx, "") : "";
+
+var actionMessageRegex = RegExp(r'\u0001ACTION (.*?)\u0001');
+String? actionMessage(String message) {
+  return actionMessageRegex.firstMatch(message)?.group(1);
+}
