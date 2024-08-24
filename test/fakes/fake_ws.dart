@@ -36,8 +36,9 @@ class FakeWs implements WebSocket {
     }
 
     if (message is String && message.startsWith("NICK")) {
+      var username = message.split(" ")[1];
       messageController.sink
-          .add(":tmi.twitch.tv 001 justinfan1234 :Welcome, GLHF!");
+          .add(":tmi.twitch.tv 001 $username :Welcome, GLHF!");
     }
   }
 
