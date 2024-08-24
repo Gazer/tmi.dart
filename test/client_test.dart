@@ -50,19 +50,28 @@ void main() {
     assert(result == "Cannot send anonymous messages.");
   });
 
-  // test("announce should throw error", () async {
-  //   try {
-  //     client = Client(
-  //       channels: "Dummy",
-  //       secure: true,
-  //       mock: ws,
-  //     )..connect();
-  //     await client.announce("nn", "5 minutes to next event");
-  //     fail("exception not thrown");
-  //   } catch (e) {
-  //     assert(e == "Cannot send anonymous messages.");
-  //   }
-  // });
+  test("announce should throw error", () async {
+    client = Client(
+      channels: "Dummy",
+      secure: true,
+      credentials: Credentials(
+        username: "TestUser",
+        password: "goodpassword",
+      ),
+      mock: ws,
+    )..connect();
+    Completer<String> completer = Completer();
+    client.on("connected", () async {
+      try {
+        var result = await client.announce("nn", "5 minutes to next event");
+        completer.complete(result[1]);
+      } catch (e) {
+        completer.completeError("$e");
+      }
+    });
+    var result = await completer.future;
+    assert(result == "5 minutes to next event");
+  });
 
   test("login with wrong password disconnect the server", () async {
     client = Client(
