@@ -1,7 +1,6 @@
 import 'package:logger/logger.dart';
 import 'package:tmi/src/client_base.dart';
 import 'package:tmi/src/message.dart';
-import 'package:tmi/tmi.dart';
 
 export 'no_op.dart';
 export 'tmi.twitch.tv/user_notice.dart';

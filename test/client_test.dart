@@ -7,15 +7,11 @@ import 'package:tmi/src/credentials.dart';
 import 'fakes/fake_ws.dart';
 
 void main() {
-  FakeWs ws = FakeWs();
-  Client client = Client(
-    channels: "Dummy",
-    secure: true,
-    mock: ws,
-  )..connect();
+  late FakeWs ws;
+  late Client client;
 
   setUp(() {
-    ws.clear();
+    ws = FakeWs();
   });
 
   test("ban", () async {
@@ -23,6 +19,11 @@ void main() {
         .when("PRIVMSG #nn :/ban nn spam")
         .thenResponse("@msg-id=ban_success :tmi.twitch.tv NOTICE #nn :nn spam");
 
+    client = Client(
+      channels: "Dummy",
+      secure: true,
+      mock: ws,
+    )..connect();
     var result = await client.ban("nn", "nn", "spam");
 
     assert(result[0] == "#nn");
@@ -31,16 +32,39 @@ void main() {
   });
 
   test("anon announce should throw error", () async {
-    try {
-      await client.announce("nn", "5 minutes to next event");
-      fail("exception not thrown");
-    } catch (e) {
-      assert(e == "Cannot send anonymous messages.");
-    }
+    client = Client(
+      channels: "Dummy",
+      secure: true,
+      mock: ws,
+    )..connect();
+    Completer<String> completer = Completer();
+    client.on("connected", () async {
+      try {
+        await client.announce("nn", "5 minutes to next event");
+        completer.completeError("exception not thrown");
+      } catch (e) {
+        completer.complete("$e");
+      }
+    });
+    var result = await completer.future;
+    assert(result == "Cannot send anonymous messages.");
   });
 
+  // test("announce should throw error", () async {
+  //   try {
+  //     client = Client(
+  //       channels: "Dummy",
+  //       secure: true,
+  //       mock: ws,
+  //     )..connect();
+  //     await client.announce("nn", "5 minutes to next event");
+  //     fail("exception not thrown");
+  //   } catch (e) {
+  //     assert(e == "Cannot send anonymous messages.");
+  //   }
+  // });
+
   test("login with wrong password disconnect the server", () async {
-    FakeWs ws1 = FakeWs();
     client = Client(
       channels: "Dummy",
       secure: true,
@@ -48,7 +72,7 @@ void main() {
         username: "User",
         password: "BadPassword",
       ),
-      mock: ws1,
+      mock: ws,
     );
 
     Completer<String> reasonCompleter = Completer();

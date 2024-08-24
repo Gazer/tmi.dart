@@ -20,6 +20,5 @@ class FakeConnection extends Connection {
   }
 
   @override
-  // TODO: implement state
   ConnectionState get state => Connected();
 }

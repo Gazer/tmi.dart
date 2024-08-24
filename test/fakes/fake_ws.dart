@@ -5,13 +5,14 @@ import 'package:web_socket_client/web_socket_client.dart';
 import 'fake_connection.dart';
 
 class FakeWs implements WebSocket {
-  FakeConnection conn = FakeConnection();
+  late FakeConnection conn;
   var messageController = StreamController<dynamic>.broadcast();
 
   Map<String, String> _mockResponses = {};
   bool? isPasswordGood;
 
   FakeWs() {
+    conn = FakeConnection();
     conn.mock.sink.add(Connected());
   }
 
@@ -21,11 +22,9 @@ class FakeWs implements WebSocket {
   }
 
   @override
-  // TODO: implement connection
   Connection get connection => conn;
 
   @override
-  // TODO: implement messages
   Stream get messages => messageController.stream;
 
   @override
@@ -39,8 +38,15 @@ class FakeWs implements WebSocket {
     if (message is String && message.startsWith("NICK")) {
       if (isPasswordGood == true) {
         var username = message.split(" ")[1];
-        messageController.sink
-            .add(":tmi.twitch.tv 001 $username :Welcome, GLHF!");
+        [
+          ":tmi.twitch.tv 001 $username :Welcome, GLHF!",
+          ":tmi.twitch.tv 002 androidedelvalle :Your host is tmi.twitch.tv",
+          ":tmi.twitch.tv 003 androidedelvalle :This server is rather new",
+          ":tmi.twitch.tv 004 androidedelvalle :-",
+          ":tmi.twitch.tv 375 androidedelvalle :-",
+          ":tmi.twitch.tv 372 androidedelvalle :You are in a maze of twisty passages, all alike.",
+          ":tmi.twitch.tv 376 androidedelvalle :> ",
+        ].forEach(messageController.sink.add);
       } else {
         messageController.sink
             .add(":tmi.twitch.tv NOTICE * :Login authentication failed");

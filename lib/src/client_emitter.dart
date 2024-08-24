@@ -12,7 +12,7 @@ class ClientEmitter {
 
   Listener on(String event, Function f) {
     return _emitter.on(event, this, (ev, context) {
-      List params = ev.eventData as List;
+      List params = ev.eventData == null ? [] : ev.eventData as List;
       switch (params.length) {
         case 0:
           f();
